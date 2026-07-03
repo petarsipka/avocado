@@ -31,6 +31,7 @@ export class ReasoningService {
       passenger,
       incident
     };
+    console.debug('[ReasoningService] processIncident payload', payload);
     return this.http.post<LegalResultResponse>(url, payload);
   }
 
@@ -50,6 +51,7 @@ export class ReasoningService {
       passenger,
       incident
     };
+    console.debug('[ReasoningService] askQuestion payload', payload);
     return this.http.post<QuestionResponse>(url, payload);
   }
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { BackwardChainGoal, BackwardChainResult, BackwardChainCondition } from '../../models/backward-chain.model';
-import { Flight } from '../../models/flight.model';
+import { Flight, DistanceCategory } from '../../models/flight.model';
 import { Incident } from '../../models/incident.model';
 import { Passenger } from '../../models/passenger.model';
 import { ReasoningService } from '../../services/reasoning.service';
@@ -49,19 +49,29 @@ export class QueryBuilderComponent {
     this.loading = true;
 
     const goal = this.selectedGoal;
+    const distanceKm = Number(this.factsForm.value.distanceKm ?? 2400);
+    const isFromEu = this.factsForm.value.isEUDeparture ?? true;
+    const isEuCarrier = this.factsForm.value.isEUCarrier ?? true;
+    const isWithinEu = distanceKm <= 3500;
+    const distanceCategory: DistanceCategory = distanceKm <= 1500
+      ? 'SHORT'
+      : isWithinEu
+        ? 'MEDIUM'
+        : 'LONG';
+
     const flight: Flight = {
       flightId: this.factsForm.value.flightId || 'flight-001',
       operatingCarrier: 'Lufthansa',
       departureAirport: 'BEG',
       arrivalAirport: 'FRA',
-      isFromEu: true,
+      isFromEu,
       isToEu: true,
-      isEuCarrier: true,
-      isWithinEu: true,
+      isEuCarrier,
+      isWithinEu,
       hasConfirmedReservation: true,
-      flightDistanceKm: this.factsForm.value.distanceKm || 2400,
-      distanceCategory: 'MEDIUM',
-      isRegulationApplicable: true
+      flightDistanceKm: distanceKm,
+      distanceCategory,
+      isRegulationApplicable: false
     };
 
     const passenger: Passenger = {
@@ -97,45 +107,42 @@ export class QueryBuilderComponent {
       isFlightNoLongerServesPurpose: false
     };
 
+    console.debug('[QueryBuilder] verifying goal', { goal, flight, passenger, incident });
+
     this.reasoningService.askQuestion(goal.id, flight, passenger, incident).subscribe({
       next: (response) => {
+        console.debug('[QueryBuilder] backend query response', response);
         this.result = {
           goalId: goal.id,
           goalName: goal.name,
           achievable: response.satisfied,
           confidence: response.satisfied ? 0.95 : 0.7,
           conclusion: response.satisfied
-            ? 'The backend confirms this right is satisfied for the provided facts.'
-            : 'The backend did not confirm this right from the current facts.',
-          articleReference: goal.description,
+            ? `The backend confirmed that ${goal.name.toLowerCase()} is satisfied for the provided facts.`
+            : `The backend did not confirm ${goal.name.toLowerCase()} for the provided facts.`,
+          articleReference: response.goal || goal.description,
           conditions: [],
           missingFacts: [],
           nextSteps: response.satisfied
             ? 'You can proceed with a complaint or claim.'
-            : 'Add more evidence or adjust the factual scenario.',
+            : 'Adjust the facts or submit more evidence and check again.',
           ruleTrace: [`BACKEND: ${response.goal}`]
         };
         this.loading = false;
       },
-      error: () => {
-        const conditions: BackwardChainCondition[] = [
-          { id: 'c1', description: 'Flight covered by Regulation 261/2004', articleReference: 'Art. 3', satisfied: true, evidence: 'Departure from EU airport' },
-          { id: 'c2', description: 'Distance between 1500-3500 km', articleReference: 'Art. 7(1)(b)', satisfied: true, evidence: 'Distance: 2400 km' },
-          { id: 'c3', description: 'Delay at destination >= 3 hours', articleReference: 'Sturgeon C-402/07', satisfied: true, evidence: 'Final delay: 4.5 hours' },
-          { id: 'c4', description: 'Not extraordinary circumstances', articleReference: 'Art. 5(3)', satisfied: true, evidence: 'Delay caused by airline operational issues' }
-        ];
-
+      error: (error) => {
+        console.error('[QueryBuilder] backend query request failed', error);
         this.result = {
           goalId: goal.id,
           goalName: goal.name,
-          achievable: true,
-          confidence: 0.95,
-          conclusion: 'You are entitled to €400 compensation under Article 7(1)(b). The delay at your final destination exceeds 3 hours, the flight distance is between 1500-3500km, and there are no extraordinary circumstances.',
-          articleReference: 'Art. 7(1)(b), Art. 6, Sturgeon C-402/07',
-          conditions,
+          achievable: false,
+          confidence: 0,
+          conclusion: `The reasoning service could not verify ${goal.name.toLowerCase()} because the backend request failed.`,
+          articleReference: goal.description,
+          conditions: [],
           missingFacts: [],
-          nextSteps: 'Submit written complaint to airline within reasonable time. If no response in 6 weeks, escalate to national enforcement body.',
-          ruleTrace: ['BC-GOAL: comp_400', 'CHECK: Art. 3 - PASSED', 'CHECK: Art. 7(1)(b) - PASSED', 'CHECK: Sturgeon - PASSED', 'CONCLUSION: RIGHT EXISTS']
+          nextSteps: 'Please ensure the backend is running and try again.',
+          ruleTrace: ['BACKEND ERROR']
         };
         this.loading = false;
       }

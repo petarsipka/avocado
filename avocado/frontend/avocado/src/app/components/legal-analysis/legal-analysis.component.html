@@ -1,4 +1,4 @@
-<div class="analysis-container" *ngIf="qualification">
+<div class="analysis-container" *ngIf="qualification; else noData">
   <header>
     <h1>Legal Analysis Result</h1>
     <p class="subtitle">Forward Chaining Execution Trace</p>
@@ -113,3 +113,11 @@
     </button>
   </div>
 </div>
+
+<ng-template #noData>
+  <div class="analysis-container">
+    <h1>Legal Analysis Result</h1>
+    <p>No analysis result was provided by the backend for this session.</p>
+    <p>Please return to the incident wizard and submit the facts again.</p>
+  </div>
+</ng-template>
