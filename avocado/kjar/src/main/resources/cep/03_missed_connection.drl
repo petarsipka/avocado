@@ -1,0 +1,13 @@
+package cep;
+
+import com.app.*;
+
+rule "CEP - missed connecting flight"
+    when
+        $land: FlightStatusEvent($res: reservationId, $lf: flightId, status == FlightStatus.LANDED) from entry-point "flight-status-stream"
+        $dep: FlightStatusEvent(reservationId == $res, $df: flightId, status == FlightStatus.DEPARTED, this before $land) from entry-point "flight-status-stream"
+        not MissedConnection(reservationId == $res)
+    then
+        insert(new MissedConnection($res, $lf, $df));
+        insert(new Notification("Missed connecting flight due to delay - compensation computed to final destination (Folkerts C-11/11).", "Art. 2(h)"));
+end

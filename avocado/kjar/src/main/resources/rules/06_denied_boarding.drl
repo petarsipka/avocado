@@ -1,0 +1,18 @@
+package rules;
+
+import com.app.*;
+
+rule "Denied boarding against will"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $p: Passenger(flightId == $f.flightId, isCheckedInOnTime == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DENIED_BOARDING,
+                     isDeniedAgainstWill == true, isVoluntarilyGaveUp == false, isDeniedForSafetyReasons == false)
+        not Right(type == RightType.COMPENSATION)
+    then
+        insert(new Right(RightType.COMPENSATION, "Art. 4(3)", "Compensation for involuntary denied boarding"));
+        insert(new Right(RightType.CARE_MEALS, "Art. 9", "Care due for denied boarding"));
+        insert(new Right(RightType.REFUND, "Art. 8", "Choice available: refund"));
+        insert(new Right(RightType.REROUTING, "Art. 8", "Choice available: rerouting"));
+end

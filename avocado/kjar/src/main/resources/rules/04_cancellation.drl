@@ -1,0 +1,32 @@
+package rules;
+
+import com.app.*;
+
+rule "Cancellation - care and choice always due"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.CANCELLATION)
+        not Right(type == RightType.CARE_MEALS)
+    then
+        insert(new Right(RightType.CARE_MEALS, "Art. 9", "Care due for cancellation regardless of cause"));
+        insert(new Right(RightType.REFUND, "Art. 8", "Choice available: refund"));
+        insert(new Right(RightType.REROUTING, "Art. 8", "Choice available: rerouting"));
+end
+
+rule "Cancellation - compensation due when notice conditions not met"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.CANCELLATION, isExtraordinary == false)
+        eval( !(
+            $i.getNoticeDaysBefore() >= 14
+            || ($i.getNoticeDaysBefore() >= 7 && $i.getIsReroutingOffered()
+                && $i.getReroutingDepartEarlierHours() <= 2 && $i.getReroutingArriveLaterHours() <= 4)
+            || ($i.getNoticeDaysBefore() < 7 && $i.getIsReroutingOffered()
+                && $i.getReroutingDepartEarlierHours() <= 1 && $i.getReroutingArriveLaterHours() <= 2)
+        ) )
+        not Right(type == RightType.COMPENSATION)
+    then
+        insert(new Right(RightType.COMPENSATION, "Art. 5(1)(c)", "Compensation due for cancellation"));
+end

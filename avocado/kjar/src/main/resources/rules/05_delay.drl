@@ -1,0 +1,64 @@
+package rules;
+
+import com.app.*;
+
+rule "Delay - care due SHORT distance at 2h"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true, distanceCategory == DistanceCategory.SHORT)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY, delayHours >= 2)
+        not Right(type == RightType.CARE_MEALS)
+    then
+        insert(new Right(RightType.CARE_MEALS, "Art. 6(1)(a)", "Care due for short-distance delay >= 2h"));
+end
+
+rule "Delay - care due MEDIUM distance at 3h"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true, distanceCategory == DistanceCategory.MEDIUM)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY, delayHours >= 3)
+        not Right(type == RightType.CARE_MEALS)
+    then
+        insert(new Right(RightType.CARE_MEALS, "Art. 6(1)(b)", "Care due for medium-distance delay >= 3h"));
+end
+
+rule "Delay - care due LONG distance at 4h"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true, distanceCategory == DistanceCategory.LONG)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY, delayHours >= 4)
+        not Right(type == RightType.CARE_MEALS)
+    then
+        insert(new Right(RightType.CARE_MEALS, "Art. 6(1)(c)", "Care due for long-distance delay >= 4h"));
+end
+
+rule "Delay - refund right at 5h"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY, delayHours >= 5)
+        not Right(type == RightType.REFUND)
+    then
+        insert(new Right(RightType.REFUND, "Art. 6(1)(iii), Art. 8(1)(a)", "Refund right for delay >= 5h"));
+end
+
+rule "Delay - compensation at 3h delay at destination (Sturgeon)"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY,
+                     delayAtDestinationHours >= 3, isExtraordinary == false)
+        not Right(type == RightType.COMPENSATION)
+    then
+        insert(new Right(RightType.COMPENSATION, "Art. 7 (Sturgeon C-402/07)", "Compensation for delay >= 3h at destination"));
+end
+
+rule "Delay - hotel when overnight required"
+    agenda-group "level2"
+    when
+        $f: Flight(isRegulationApplicable == true)
+        $i: Incident(flightId == $f.flightId, type == IncidentType.DELAY, isRequiresOvernightStay == true)
+        not Right(type == RightType.HOTEL)
+    then
+        insert(new Right(RightType.HOTEL, "Art. 6(1)(ii), Art. 9(1)(b)", "Hotel due, overnight stay required"));
+end
