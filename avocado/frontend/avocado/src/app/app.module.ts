@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -14,6 +15,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -51,6 +54,7 @@ import { ReplaceUnderscorePipe } from './pipes/replace-underscore.pipe';
     BrowserAnimationsModule,
     ReactiveFormsModule,
     FormsModule,
+    HttpClientModule,
     AppRoutingModule,
     MatToolbarModule,
     MatSidenavModule,
@@ -63,6 +67,8 @@ import { ReplaceUnderscorePipe } from './pipes/replace-underscore.pipe';
     MatSelectModule,
     MatCheckboxModule,
     MatStepperModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatExpansionModule,
     MatChipsModule,
     MatProgressBarModule,

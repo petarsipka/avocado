@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class FlightService {
-  // TODO: Connect to Spring Boot backend when ready
-  // Endpoints: GET /api/flights, POST /api/flights, GET /api/flights/{id}/events, WS /ws/flights/{id}
+  // NOT USED: Flight data is provided by users via incident-wizard form
+  // Frontend uses hardcoded mock flights in components
+  // Backend endpoints: GET /api/flights, POST /api/flights, GET /api/flights/{id}/events, WS /ws/flights/{id}
 }

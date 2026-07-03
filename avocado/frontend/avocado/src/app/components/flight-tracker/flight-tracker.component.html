@@ -44,7 +44,7 @@
         <mat-card-header><mat-card-title>Monitored Flights</mat-card-title></mat-card-header>
         <mat-card-content>
           <mat-list>
-            <mat-list-item *ngFor="let flight of flights" (click)="selectFlight(flight)" [class.selected]="selectedFlight?.id === flight.id">
+            <mat-list-item *ngFor="let flight of flights" (click)="selectFlight(flight)" [class.selected]="selectedFlight?.flightId === flight.flightId">
               <mat-icon matListItemIcon>flight</mat-icon>
               <div matListItemTitle>{{ flight.flightNumber }}</div>
               <div matListItemLine>{{ flight.departureCity }} → {{ flight.arrivalCity }}</div>

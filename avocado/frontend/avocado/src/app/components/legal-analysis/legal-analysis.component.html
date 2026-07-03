@@ -39,7 +39,7 @@
     </mat-card-content>
   </mat-card>
   
-  <mat-card *ngIf="qualification.compensation.applicable" class="result-card compensation">
+  <mat-card class="result-card compensation">
     <mat-card-header>
       <mat-icon mat-card-avatar>euro_symbol</mat-icon>
       <mat-card-title>Compensation</mat-card-title>
@@ -47,21 +47,18 @@
     </mat-card-header>
     <mat-card-content>
       <div class="compensation-amount">
-        <span class="amount">{{ qualification.compensation.amount }}</span>
-        <span class="currency">{{ qualification.compensation.currency }}</span>
+        <span class="amount">{{ qualification.compensation.amountEur }}</span>
+        <span class="currency">EUR</span>
       </div>
-      <p class="compensation-reason">{{ qualification.compensation.reason }}</p>
-      <mat-chip-listbox *ngIf="qualification.compensation.reducedBy50Percent">
-        <mat-chip color="warn">Reduced by 50% (alternative flight offered)</mat-chip>
-      </mat-chip-listbox>
+      <p class="compensation-reason">{{ qualification.compensation.explanation }}</p>
     </mat-card-content>
   </mat-card>
   
   <h2>Care Rights (Right to Care)</h2>
   <div class="rights-grid">
-    <mat-card *ngFor="let right of qualification.careRights" class="right-card" [class.active]="right.applicable">
+    <mat-card *ngFor="let right of qualification.careRights" class="right-card">
       <mat-card-content>
-        <mat-icon>{{ right.type === 'FOOD_DRINK' ? 'restaurant' : right.type === 'PHONE_CALLS' ? 'phone' : right.type === 'HOTEL' ? 'hotel' : 'directions_car' }}</mat-icon>
+        <mat-icon>{{ right.type === 'CARE_MEALS' ? 'restaurant' : right.type === 'CARE_PHONE' ? 'phone' : right.type === 'HOTEL' ? 'hotel' : 'directions_car' }}</mat-icon>
         <h3>{{ right.type | replaceUnderscore }}</h3>
         <p>{{ right.description }}</p>
         <span class="article">{{ right.article }}</span>
@@ -71,7 +68,7 @@
   
   <h2>Reroute / Refund Rights</h2>
   <div class="rights-grid">
-    <mat-card *ngFor="let right of qualification.rerouteRights" class="right-card" [class.active]="right.applicable">
+    <mat-card *ngFor="let right of qualification.rerouteRights" class="right-card">
       <mat-card-content>
         <mat-icon>{{ right.type === 'REFUND' ? 'money_back' : 'flight' }}</mat-icon>
         <h3>{{ right.type === 'REFUND' ? 'Full Refund' : 'Alternative Flight' }}</h3>

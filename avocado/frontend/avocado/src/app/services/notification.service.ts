@@ -2,5 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  // TODO: Connect to backend WebSocket for real-time CEP alerts
+  // NOT USED: WebSocket/CEP alerts not implemented
+  // Backend WebSocket endpoint: WS /ws/alerts for real-time notifications
+  // Would receive CepAlert events when flight status changes (delays, cancellations, etc)
 }

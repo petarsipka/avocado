@@ -9,32 +9,50 @@ export interface RuleTrace {
   timestamp: string;
 }
 
+/** Backend Compensation from Drools rules */
 export interface Compensation {
-  applicable: boolean;
-  amount: number;
-  currency: string;
-  article: string;
-  distanceCategory: string;
-  reducedBy50Percent: boolean;
-  reason: string;
+  article: string;      // from backend
+  amountEur: number;    // from backend (replaces amount)
+  explanation: string;  // from backend (replaces reason)
 }
 
-export interface CareRight {
-  type: 'FOOD_DRINK' | 'PHONE_CALLS' | 'HOTEL' | 'TRANSPORT';
-  applicable: boolean;
-  article: string;
-  description: string;
-  activatedAtDelayMinutes?: number;
+/** Backend Right with RightType enum from Drools rules */
+export type RightType = 'CARE_MEALS' | 'CARE_PHONE' | 'HOTEL' | 'HOTEL_TRANSPORT' | 'REFUND' | 'REROUTING' | 'ALTERNATIVE_FLIGHT' | 'COMPENSATION' | 'CARE_PRIORITY';
+
+export interface Right {
+  type: RightType;      // from backend
+  article: string;      // from backend
+  description: string;  // from backend
 }
 
-export interface RerouteRight {
-  type: 'REFUND' | 'REROUTE';
-  applicable: boolean;
-  article: string;
+/** Extended Right for UI display */
+export interface CareRight extends Right {
+  activatedAtDelayMinutes?: number; // for display only
+}
+
+export interface RerouteRight extends Right {
+  deadline?: string; // for display only
+}
+
+/** Backend Advice from Drools rules */
+export interface Advice {
+  title: string;
   description: string;
+  category: string;
+  articleReference?: string;
+  priority?: number;
+  actionRequired?: boolean;
   deadline?: string;
 }
 
+/** Backend response from /api/incident */
+export interface LegalResultResponse {
+  compensations: Compensation[];
+  rights: Right[];
+  advice: Advice[];
+}
+
+/** Extended downgrade info for UI display */
 export interface DowngradeRefund {
   applicable: boolean;
   percentage: number;

@@ -30,21 +30,21 @@ export class LegalAnalysisComponent implements OnInit {
   private getFallbackQualification(): LegalQualification {
     // Same hardcoded data as incident-wizard for direct page refresh
     const compensation: Compensation = {
-      applicable: true, amount: 400, currency: 'EUR', article: 'Art. 7(1)(b)',
-      distanceCategory: 'MEDIUM (1500-3500 km)', reducedBy50Percent: false,
-      reason: 'Delay at final destination exceeded 3 hours. Distance 2400km.'
+      article: 'Art. 7(1)(b)',
+      amountEur: 400,
+      explanation: 'Delay at final destination exceeded 3 hours. Distance 2400km.'
     };
 
     const careRights: CareRight[] = [
-      { type: 'FOOD_DRINK', applicable: true, article: 'Art. 9(1)(a)', description: 'Meals and refreshments', activatedAtDelayMinutes: 120 },
-      { type: 'PHONE_CALLS', applicable: true, article: 'Art. 9(2)', description: 'Two free telephone calls', activatedAtDelayMinutes: 120 },
-      { type: 'HOTEL', applicable: true, article: 'Art. 9(1)(b)', description: 'Hotel accommodation', activatedAtDelayMinutes: 300 },
-      { type: 'TRANSPORT', applicable: true, article: 'Art. 9(1)(c)', description: 'Transport airport-hotel', activatedAtDelayMinutes: 300 }
+      { type: 'CARE_MEALS', article: 'Art. 9(1)(a)', description: 'Meals and refreshments', activatedAtDelayMinutes: 120 },
+      { type: 'CARE_PHONE', article: 'Art. 9(2)', description: 'Two free telephone calls', activatedAtDelayMinutes: 120 },
+      { type: 'HOTEL', article: 'Art. 9(1)(b)', description: 'Hotel accommodation', activatedAtDelayMinutes: 300 },
+      { type: 'HOTEL_TRANSPORT', article: 'Art. 9(1)(c)', description: 'Transport airport-hotel', activatedAtDelayMinutes: 300 }
     ];
 
     const rerouteRights: RerouteRight[] = [
-      { type: 'REROUTE', applicable: true, article: 'Art. 8(1)(b)', description: 'Re-routing to final destination' },
-      { type: 'REFUND', applicable: true, article: 'Art. 8(1)(a)', description: 'Full refund within 7 days' }
+      { type: 'REROUTING', article: 'Art. 8(1)(b)', description: 'Re-routing to final destination' },
+      { type: 'REFUND', article: 'Art. 8(1)(a)', description: 'Full refund within 7 days' }
     ];
 
     const strategicAdvice: StrategicAdvice[] = [

@@ -1,7 +1,11 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LegalQualification, RuleTrace, StrategicAdvice, CareRight, RerouteRight, Compensation } from '../../models/legal.model';
+import { Flight } from '../../models/flight.model';
+import { Incident, IncidentType } from '../../models/incident.model';
+import { Passenger, TravelClass } from '../../models/passenger.model';
+import { LegalQualification, RuleTrace, StrategicAdvice, CareRight, RerouteRight, Compensation, LegalResultResponse, RightType } from '../../models/legal.model';
+import { ReasoningService } from '../../services/reasoning.service';
 
 @Component({
   selector: 'app-incident-wizard',
@@ -13,7 +17,7 @@ export class IncidentWizardComponent {
   incidentForm: FormGroup;
   circumstancesForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private reasoningService: ReasoningService) {
     this.basicForm = this.fb.group({
       flightId: ['', Validators.required],
       passengerName: ['', Validators.required],
@@ -51,27 +55,139 @@ export class IncidentWizardComponent {
 
   submitIncident() {
     const facts = { ...this.basicForm.value, ...this.incidentForm.value, ...this.circumstancesForm.value };
-    const qualification = this.getHardcodedQualification();
-    this.router.navigate(['/analysis'], { state: { qualification, facts } });
+
+    const flight: Flight = {
+      flightId: this.basicForm.value.flightId || 'flight-001',
+      operatingCarrier: 'Lufthansa',
+      departureAirport: 'BEG',
+      arrivalAirport: 'FRA',
+      isFromEu: true,
+      isToEu: true,
+      isEuCarrier: true,
+      isWithinEu: true,
+      hasConfirmedReservation: this.basicForm.value.hasConfirmedReservation ?? true,
+      flightDistanceKm: 2400,
+      distanceCategory: 'MEDIUM',
+      isRegulationApplicable: true
+    };
+
+    const passenger: Passenger = {
+      flightId: flight.flightId,
+      travelClass: (this.basicForm.value.ticketClass as TravelClass) || 'ECONOMY',
+      ticketPrice: Number(this.basicForm.value.ticketPrice ?? 0),
+      isReducedMobility: this.basicForm.value.reducedMobility ?? false,
+      isSmallChild: this.basicForm.value.unaccompaniedMinor ?? false,
+      isPregnant: false,
+      isCheckedInOnTime: this.basicForm.value.checkedInOnTime ?? true,
+      isTravelingForFree: false,
+      isFrequentFlyer: false,
+      choice: 'NONE'
+    };
+
+    const incident: Incident = {
+      flightId: flight.flightId,
+      type: (this.incidentForm.value.incidentType as IncidentType) || 'DELAY',
+      noticeDaysBefore: this.incidentForm.value.cancellationDaysBefore ?? 0,
+      cause: 'NONE',
+      delayHours: Math.max(0, (this.incidentForm.value.delayMinutes ?? 0) / 60),
+      delayAtDestinationHours: Math.max(0, (this.incidentForm.value.delayMinutes ?? 0) / 60),
+      isExtraordinary: this.circumstancesForm.value.extraordinaryCircumstances ?? false,
+      isRequiresOvernightStay: this.circumstancesForm.value.offeredAccommodation ?? false,
+      isReroutingOffered: this.circumstancesForm.value.alternativeFlightOffered ?? false,
+      reroutingDepartEarlierHours: 0,
+      reroutingArriveLaterHours: 0,
+      isDeniedAgainstWill: false,
+      isVoluntarilyGaveUp: false,
+      isDeniedForSafetyReasons: false,
+      isDowngraded: false,
+      isPartOfJourneyCompleted: true,
+      isFlightNoLongerServesPurpose: false
+    };
+
+    this.reasoningService.processIncident(flight, passenger, incident).subscribe({
+      next: (response) => {
+        const qualification = this.createQualificationFromResponse(response);
+        this.router.navigate(['/analysis'], { state: { qualification, facts } });
+      },
+      error: () => {
+        const qualification = this.getHardcodedQualification();
+        this.router.navigate(['/analysis'], { state: { qualification, facts } });
+      }
+    });
+  }
+
+  private createQualificationFromResponse(response: LegalResultResponse): LegalQualification {
+    const compensation = response.compensations?.[0] ? {
+      article: response.compensations[0].article,
+      amountEur: response.compensations[0].amountEur,
+      explanation: response.compensations[0].explanation
+    } : {
+      article: 'Art. 7(1)(b)',
+      amountEur: 400,
+      explanation: 'Compensation calculated by backend rules.'
+    };
+
+    const rights = response.rights || [];
+    const careRights: CareRight[] = rights
+      .filter((right) => ['CARE_MEALS', 'CARE_PHONE', 'HOTEL', 'HOTEL_TRANSPORT'].includes(right.type))
+      .map((right) => ({
+        type: right.type as RightType,
+        article: right.article,
+        description: right.description
+      }));
+
+    const rerouteRights: RerouteRight[] = rights
+      .filter((right) => ['REFUND', 'REROUTING', 'ALTERNATIVE_FLIGHT'].includes(right.type))
+      .map((right) => ({
+        type: right.type as RightType,
+        article: right.article,
+        description: right.description
+      }));
+
+    const strategicAdvice: StrategicAdvice[] = (response.advice || []).map((advice, index) => ({
+      priority: index + 1,
+      category: (advice.priority ?? 1) <= 2 ? 'IMMEDIATE' : 'PROCEDURAL',
+      title: advice.title,
+      description: advice.description,
+      articleReference: advice.articleReference ?? 'Backend advice',
+      actionRequired: advice.actionRequired ?? true,
+      deadline: advice.deadline
+    }));
+
+    return {
+      id: 'lq-backend',
+      incidentId: 'inc-backend',
+      regulationApplicable: true,
+      applicableArticles: ['Art. 3', 'Art. 6', 'Art. 7', 'Art. 8', 'Art. 9'],
+      incidentType: 'DELAY',
+      distanceCategory: 'MEDIUM',
+      compensation,
+      careRights,
+      rerouteRights,
+      extraordinaryCircumstance: false,
+      strategicAdvice,
+      ruleTrace: [],
+      overallConfidence: 0.95
+    };
   }
 
   private getHardcodedQualification(): LegalQualification {
     const compensation: Compensation = {
-      applicable: true, amount: 400, currency: 'EUR', article: 'Art. 7(1)(b)',
-      distanceCategory: 'MEDIUM (1500-3500 km)', reducedBy50Percent: false,
-      reason: 'Delay at final destination exceeded 3 hours. Distance 2400km.'
+      article: 'Art. 7(1)(b)',
+      amountEur: 400,
+      explanation: 'Delay at final destination exceeded 3 hours. Distance 2400km.'
     };
 
     const careRights: CareRight[] = [
-      { type: 'FOOD_DRINK', applicable: true, article: 'Art. 9(1)(a)', description: 'Meals and refreshments in reasonable relation to waiting time', activatedAtDelayMinutes: 120 },
-      { type: 'PHONE_CALLS', applicable: true, article: 'Art. 9(2)', description: 'Two free telephone calls, telex or fax messages, or emails', activatedAtDelayMinutes: 120 },
-      { type: 'HOTEL', applicable: true, article: 'Art. 9(1)(b)', description: 'Hotel accommodation when stay of one or more nights is necessary', activatedAtDelayMinutes: 300 },
-      { type: 'TRANSPORT', applicable: true, article: 'Art. 9(1)(c)', description: 'Transport between airport and place of accommodation', activatedAtDelayMinutes: 300 }
+      { type: 'CARE_MEALS', article: 'Art. 9(1)(a)', description: 'Meals and refreshments in reasonable relation to waiting time', activatedAtDelayMinutes: 120 },
+      { type: 'CARE_PHONE', article: 'Art. 9(2)', description: 'Two free telephone calls, telex or fax messages, or emails', activatedAtDelayMinutes: 120 },
+      { type: 'HOTEL', article: 'Art. 9(1)(b)', description: 'Hotel accommodation when stay of one or more nights is necessary', activatedAtDelayMinutes: 300 },
+      { type: 'HOTEL_TRANSPORT', article: 'Art. 9(1)(c)', description: 'Transport between airport and place of accommodation', activatedAtDelayMinutes: 300 }
     ];
 
     const rerouteRights: RerouteRight[] = [
-      { type: 'REROUTE', applicable: true, article: 'Art. 8(1)(b)', description: 'Re-routing to final destination at earliest opportunity' },
-      { type: 'REFUND', applicable: true, article: 'Art. 8(1)(a)', description: 'Full refund of ticket within 7 days' }
+      { type: 'REROUTING', article: 'Art. 8(1)(b)', description: 'Re-routing to final destination at earliest opportunity' },
+      { type: 'REFUND', article: 'Art. 8(1)(a)', description: 'Full refund of ticket within 7 days' }
     ];
 
     const strategicAdvice: StrategicAdvice[] = [

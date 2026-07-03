@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Flight, FlightStatusEvent } from '../../models/flight.model';
+import { FlightDisplay, FlightStatusEvent } from '../../models/flight.model';
 import { CepAlert } from '../../models/cep.model';
 import { ComplaintProcess } from '../../models/complaint.model';
 
@@ -9,22 +9,26 @@ import { ComplaintProcess } from '../../models/complaint.model';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
-  flights: Flight[] = [
+  flights: FlightDisplay[] = [
     {
-      id: '1', flightNumber: 'LH1411', airline: 'Lufthansa', airlineCode: 'LH',
+      flightId: '1', flightNumber: 'LH1411', airline: 'Lufthansa', airlineCode: 'LH',
+      operatingCarrier: 'LH',
       departureAirport: 'BEG', departureCity: 'Belgrade',
       arrivalAirport: 'FRA', arrivalCity: 'Frankfurt',
       scheduledDeparture: '2026-07-03T10:00:00', scheduledArrival: '2026-07-03T11:50:00',
-      distanceKm: 1050, status: 'DELAYED', delayMinutes: 125,
-      isEUDeparture: false, isEUDestination: true, isEUCarrier: true, regulationApplicable: true
+      flightDistanceKm: 1050, distanceCategory: 'MEDIUM', status: 'DELAYED', delayMinutes: 125,
+      isFromEu: false, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
+      isWithinEu: false, hasConfirmedReservation: true
     },
     {
-      id: '2', flightNumber: 'LH1860', airline: 'Lufthansa', airlineCode: 'LH',
+      flightId: '2', flightNumber: 'LH1860', airline: 'Lufthansa', airlineCode: 'LH',
+      operatingCarrier: 'LH',
       departureAirport: 'FRA', departureCity: 'Frankfurt',
       arrivalAirport: 'MAD', arrivalCity: 'Madrid',
       scheduledDeparture: '2026-07-03T13:30:00', scheduledArrival: '2026-07-03T16:00:00',
-      distanceKm: 1420, status: 'DEPARTED',
-      isEUDeparture: true, isEUDestination: true, isEUCarrier: true, regulationApplicable: true
+      flightDistanceKm: 1420, distanceCategory: 'MEDIUM', status: 'DEPARTED',
+      isFromEu: true, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
+      isWithinEu: true, hasConfirmedReservation: true
     }
   ];
 

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Flight, FlightStatusEvent } from '../../models/flight.model';
+import { FlightDisplay, Flight, FlightStatusEvent } from '../../models/flight.model';
 
 @Component({
   selector: 'app-flight-tracker',
@@ -9,22 +9,26 @@ import { Flight, FlightStatusEvent } from '../../models/flight.model';
 })
 export class FlightTrackerComponent {
   flightForm: FormGroup;
-  flights: Flight[] = [
+  flights: FlightDisplay[] = [
     {
-      id: '1', flightNumber: 'LH1411', airline: 'Lufthansa', airlineCode: 'LH',
+      flightId: '1', flightNumber: 'LH1411', airline: 'Lufthansa', airlineCode: 'LH',
+      operatingCarrier: 'LH',
       departureAirport: 'BEG', departureCity: 'Belgrade',
       arrivalAirport: 'FRA', arrivalCity: 'Frankfurt',
       scheduledDeparture: '2026-07-03T10:00:00', scheduledArrival: '2026-07-03T11:50:00',
-      distanceKm: 1050, status: 'DELAYED', delayMinutes: 125,
-      isEUDeparture: false, isEUDestination: true, isEUCarrier: true, regulationApplicable: true
+      flightDistanceKm: 1050, distanceCategory: 'MEDIUM', status: 'DELAYED', delayMinutes: 125,
+      isFromEu: false, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
+      isWithinEu: false, hasConfirmedReservation: true
     },
     {
-      id: '2', flightNumber: 'LH1860', airline: 'Lufthansa', airlineCode: 'LH',
+      flightId: '2', flightNumber: 'LH1860', airline: 'Lufthansa', airlineCode: 'LH',
+      operatingCarrier: 'LH',
       departureAirport: 'FRA', departureCity: 'Frankfurt',
       arrivalAirport: 'MAD', arrivalCity: 'Madrid',
       scheduledDeparture: '2026-07-03T13:30:00', scheduledArrival: '2026-07-03T16:00:00',
-      distanceKm: 1420, status: 'DEPARTED',
-      isEUDeparture: true, isEUDestination: true, isEUCarrier: true, regulationApplicable: true
+      flightDistanceKm: 1420, distanceCategory: 'MEDIUM', status: 'DEPARTED',
+      isFromEu: true, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
+      isWithinEu: true, hasConfirmedReservation: true
     }
   ];
   selectedFlight?: Flight;
@@ -43,22 +47,27 @@ export class FlightTrackerComponent {
 
   addFlight() {
     if (this.flightForm.valid) {
-      const newFlight: Flight = {
+      const newFlight: FlightDisplay = {
         ...this.flightForm.value,
-        id: Date.now().toString(),
+        flightId: Date.now().toString(),
+        operatingCarrier: this.flightForm.value.airline,
         departureCity: this.flightForm.value.departureAirport,
         arrivalCity: this.flightForm.value.arrivalAirport,
+        scheduledArrival: '',
+        flightDistanceKm: this.flightForm.value.distanceKm,
+        distanceCategory: 'MEDIUM',
         status: 'SCHEDULED',
-        isEUDeparture: false, isEUDestination: true, isEUCarrier: true, regulationApplicable: true
+        isFromEu: false, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
+        isWithinEu: false, hasConfirmedReservation: true
       };
       this.flights.push(newFlight);
       this.flightForm.reset();
     }
   }
 
-  selectFlight(flight: Flight) {
+  selectFlight(flight: FlightDisplay) {
     this.selectedFlight = flight;
-    this.flightEvents = this.getMockEvents(flight.id);
+    this.flightEvents = this.getMockEvents(flight.flightId);
   }
 
   private getMockEvents(flightId: string): FlightStatusEvent[] {
