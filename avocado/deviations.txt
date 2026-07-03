@@ -1,0 +1,26 @@
+ODSTUPANJA OD VEZBI
+===================
+Spisak mesta gde je koriscen pristup koji nije direktno prikazan na vezbama.
+Sve ostalo prati obrasce sa vezbi (vezbe1-4).
+
+
+Fajl: app/src/main/java/com/app/service/CepService.java; Linije 29-44
+Razlog: CEP sesija se koristi iz Spring servisa (a ne iz test klase kao na vezbe3).
+U istu stream sesiju se ubacuje i obicna cinjenica Flight (za distanceCategory)
+zajedno sa dogadjajima preko entry-point-a, a pseudo-clock se pomera u aplikaciji.
+Na vezbama je stream sesija dobijala samo dogadjaje i clock se pomerao u testovima.
+
+Fajl: app/src/main/java/com/app/service/QueryService.java; Linije 32-38
+Razlog: u istoj sesiji se prvo pokrece forward chaining (agenda-group fokus +
+fireAllRules) pa zatim backward chaining upit (getQueryResults). Na vezbe4 su
+upiti pokretani samostalno, bez prethodnog forward chaining-a nad istom sesijom.
+
+Fajl: kjar/src/main/resources/cep/03_missed_connection.drl; Linije 7-9
+Razlog: temporalni join ("this before") izmedju dogadjaja DVA razlicita leta iste
+rezervacije. Na vezbe3 su temporalni operatori pokazani na jednostavnijim
+sekvencama nad istim entitetom.
+
+Fajl: app/src/main/java/com/app/service/LegalService.java; Linije 41-50
+Razlog: rezultati zakljucivanja se skupljaju iteracijom kroz session.getObjects()
+i filtriranjem po tipu (Compensation/Right/Advice). Ovaj nacin citanja izlaznih
+cinjenica nije eksplicitno radjen na vezbama.

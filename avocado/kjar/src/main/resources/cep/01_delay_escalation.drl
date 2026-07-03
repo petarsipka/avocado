@@ -1,0 +1,46 @@
+package cep;
+
+import com.app.*;
+
+rule "CEP - delay 2h SHORT distance care"
+    when
+        $f: Flight($fid: flightId, distanceCategory == DistanceCategory.SHORT)
+        FlightStatusEvent(flightId == $fid, status == FlightStatus.DELAYED, delayMinutes >= 120) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 9 (2h)")
+    then
+        insert(new Notification("Delay exceeded 2h: you are entitled to meals and drinks.", "Art. 9 (2h)"));
+end
+
+rule "CEP - delay 3h MEDIUM distance care"
+    when
+        $f: Flight($fid: flightId, distanceCategory == DistanceCategory.MEDIUM)
+        FlightStatusEvent(flightId == $fid, status == FlightStatus.DELAYED, delayMinutes >= 180) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 9 (3h)")
+    then
+        insert(new Notification("Delay exceeded 3h: you are entitled to meals and drinks.", "Art. 9 (3h)"));
+end
+
+rule "CEP - delay 4h LONG distance care"
+    when
+        $f: Flight($fid: flightId, distanceCategory == DistanceCategory.LONG)
+        FlightStatusEvent(flightId == $fid, status == FlightStatus.DELAYED, delayMinutes >= 240) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 9 (4h)")
+    then
+        insert(new Notification("Delay exceeded 4h: you are entitled to meals and drinks.", "Art. 9 (4h)"));
+end
+
+rule "CEP - delay 5h refund right"
+    when
+        FlightStatusEvent($fid: flightId, status == FlightStatus.DELAYED, delayMinutes >= 300) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 8(1)(a) (5h)")
+    then
+        insert(new Notification("Delay exceeded 5h: you may abandon the trip with full refund.", "Art. 8(1)(a) (5h)"));
+end
+
+rule "CEP - delay 3h at destination compensation"
+    when
+        FlightStatusEvent($fid: flightId, status == FlightStatus.DELAYED, delayMinutes >= 180) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 7 (3h destination)")
+    then
+        insert(new Notification("Delay at destination exceeded 3h: financial compensation may be due.", "Art. 7 (3h destination)"));
+end

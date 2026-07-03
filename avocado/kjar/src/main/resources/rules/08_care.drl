@@ -1,0 +1,31 @@
+package rules;
+
+import com.app.*;
+
+rule "Care - two free phone calls"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.CARE_MEALS)
+        not Right(type == RightType.CARE_PHONE)
+    then
+        insert(new Right(RightType.CARE_PHONE, "Art. 9(2)", "Two free phone calls"));
+end
+
+rule "Care - transport airport to hotel"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.HOTEL)
+        not Right(type == RightType.HOTEL_TRANSPORT)
+    then
+        insert(new Right(RightType.HOTEL_TRANSPORT, "Art. 9(1)(c)", "Transport between airport and hotel"));
+end
+
+rule "Care - priority for vulnerable passengers"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.CARE_MEALS)
+        Passenger(isReducedMobility == true || isSmallChild == true)
+        not Right(type == RightType.CARE_PRIORITY)
+    then
+        insert(new Right(RightType.CARE_PRIORITY, "Art. 9(3), Art. 11", "Priority care for vulnerable passenger"));
+end

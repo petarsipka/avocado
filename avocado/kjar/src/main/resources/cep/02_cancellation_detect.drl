@@ -1,0 +1,12 @@
+package cep;
+
+import com.app.*;
+
+rule "CEP - cancellation detected after on time"
+    when
+        $on: FlightStatusEvent($fid: flightId, status == FlightStatus.ON_TIME) from entry-point "flight-status-stream"
+        $cancel: FlightStatusEvent(flightId == $fid, status == FlightStatus.CANCELLED, this after $on) from entry-point "flight-status-stream"
+        not Notification(article == "Art. 5 (cancellation)")
+    then
+        insert(new Notification("Flight cancelled after being on time - assess Art. 5 compensation window.", "Art. 5 (cancellation)"));
+end

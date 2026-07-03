@@ -1,0 +1,8 @@
+package cep;
+
+import com.app.*;
+
+declare FlightStatusEvent
+    @role(event)
+    @timestamp(timestamp)
+end

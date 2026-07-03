@@ -1,0 +1,21 @@
+package rules;
+
+import com.app.*;
+
+rule "Regulation applies - departure from EU"
+    agenda-group "level1"
+    when
+        $f: Flight(isFromEu == true, hasConfirmedReservation == true, isRegulationApplicable == false)
+        not Passenger(flightId == $f.flightId, isTravelingForFree == true, isFrequentFlyer == false)
+    then
+        modify($f) { setIsRegulationApplicable(true) };
+end
+
+rule "Regulation applies - arrival to EU on EU carrier"
+    agenda-group "level1"
+    when
+        $f: Flight(isFromEu == false, isToEu == true, isEuCarrier == true, hasConfirmedReservation == true, isRegulationApplicable == false)
+        not Passenger(flightId == $f.flightId, isTravelingForFree == true, isFrequentFlyer == false)
+    then
+        modify($f) { setIsRegulationApplicable(true) };
+end

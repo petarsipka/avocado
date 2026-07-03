@@ -1,0 +1,21 @@
+template header
+minDelayHours
+article
+description
+
+package rules;
+
+import com.app.Incident;
+import com.app.Right;
+import com.app.RightType;
+
+template "custom-thresholds"
+
+rule "Custom threshold @{row.rowNumber}"
+when
+    Incident(delayHours >= @{minDelayHours})
+then
+    insert(new Right(RightType.CARE_MEALS, "@{article}", "@{description}"));
+end
+
+end template

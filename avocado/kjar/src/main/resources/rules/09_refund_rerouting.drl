@@ -1,0 +1,33 @@
+package rules;
+
+import com.app.*;
+
+rule "Refund chosen - full ticket within 7 days"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.REFUND)
+        Passenger(choice == PassengerChoice.REFUND)
+        not Advice(article == "Art. 8(1)(a)")
+    then
+        insert(new Advice("Airline must refund the full ticket price within 7 days.", "Art. 8(1)(a)"));
+end
+
+rule "Rerouting chosen - alternative flight"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.REROUTING)
+        Passenger(choice == PassengerChoice.REROUTING)
+        not Right(type == RightType.ALTERNATIVE_FLIGHT)
+    then
+        insert(new Right(RightType.ALTERNATIVE_FLIGHT, "Art. 8(1)(b)", "Alternative flight at the earliest opportunity"));
+end
+
+rule "Refund covers completed part and return flight"
+    agenda-group "level3"
+    when
+        $p: Passenger(choice == PassengerChoice.REFUND)
+        $i: Incident(flightId == $p.flightId, isPartOfJourneyCompleted == true, isFlightNoLongerServesPurpose == true)
+        not Advice(article == "Art. 8(1)(a) return")
+    then
+        insert(new Advice("Refund covers the completed part plus a return flight to the departure point.", "Art. 8(1)(a) return"));
+end

@@ -1,0 +1,14 @@
+package rules;
+
+import com.app.*;
+
+rule "Extraordinary circumstance from cause"
+    agenda-group "level1"
+    when
+        $i: Incident(cause in (DisruptionCause.WEATHER, DisruptionCause.POLITICAL_INSTABILITY,
+                               DisruptionCause.SECURITY_RISK, DisruptionCause.ATC_STRIKE,
+                               DisruptionCause.AIRPORT_STRIKE, DisruptionCause.ATM_DECISION),
+                     isExtraordinary == false)
+    then
+        modify($i) { setIsExtraordinary(true) };
+end

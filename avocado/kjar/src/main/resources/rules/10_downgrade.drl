@@ -1,0 +1,36 @@
+package rules;
+
+import com.app.*;
+
+rule "Downgrade refund SHORT - 30%"
+    agenda-group "level3"
+    when
+        $f: Flight(distanceCategory == DistanceCategory.SHORT)
+        $i: Incident(flightId == $f.flightId, isDowngraded == true)
+        $p: Passenger(flightId == $f.flightId)
+        not Compensation(article == "Art. 10(2)(a)")
+    then
+        insert(new Compensation("Art. 10(2)(a)", $p.getTicketPrice() * 0.30, "Downgrade refund 30% of ticket price"));
+end
+
+rule "Downgrade refund MEDIUM - 50%"
+    agenda-group "level3"
+    when
+        $f: Flight(distanceCategory == DistanceCategory.MEDIUM)
+        $i: Incident(flightId == $f.flightId, isDowngraded == true)
+        $p: Passenger(flightId == $f.flightId)
+        not Compensation(article == "Art. 10(2)(b)")
+    then
+        insert(new Compensation("Art. 10(2)(b)", $p.getTicketPrice() * 0.50, "Downgrade refund 50% of ticket price"));
+end
+
+rule "Downgrade refund LONG - 75%"
+    agenda-group "level3"
+    when
+        $f: Flight(distanceCategory == DistanceCategory.LONG)
+        $i: Incident(flightId == $f.flightId, isDowngraded == true)
+        $p: Passenger(flightId == $f.flightId)
+        not Compensation(article == "Art. 10(2)(c)")
+    then
+        insert(new Compensation("Art. 10(2)(c)", $p.getTicketPrice() * 0.75, "Downgrade refund 75% of ticket price"));
+end
