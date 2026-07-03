@@ -1,0 +1,135 @@
+<div class="wizard-container">
+  <h1>Incident Report Wizard</h1>
+  <p class="subtitle">Forward Chaining Fact Acquisition</p>
+  
+  <mat-stepper [linear]="true" #stepper>
+    <mat-step [stepControl]="basicForm" label="Flight & Passenger">
+      <form [formGroup]="basicForm" class="step-form">
+        <h3>Level 1: Classification Data</h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Flight ID</mat-label>
+          <input matInput formControlName="flightId" placeholder="Select from tracked flights">
+        </mat-form-field>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Passenger Name</mat-label>
+            <input matInput formControlName="passengerName">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email">
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Ticket Class</mat-label>
+          <mat-select formControlName="ticketClass">
+            <mat-option value="ECONOMY">Economy</mat-option>
+            <mat-option value="BUSINESS">Business</mat-option>
+            <mat-option value="FIRST">First</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="hasConfirmedReservation">Confirmed Reservation</mat-checkbox>
+          <mat-checkbox formControlName="checkedInOnTime">Checked In On Time</mat-checkbox>
+          <mat-checkbox formControlName="reducedMobility">Reduced Mobility</mat-checkbox>
+          <mat-checkbox formControlName="unaccompaniedMinor">Unaccompanied Minor</mat-checkbox>
+        </div>
+        <div class="step-actions">
+          <button mat-raised-button color="primary" matStepperNext [disabled]="!basicForm.valid">Next</button>
+        </div>
+      </form>
+    </mat-step>
+    
+    <mat-step [stepControl]="incidentForm" label="Incident Details">
+      <form [formGroup]="incidentForm" class="step-form">
+        <h3>Level 2: Incident Qualification</h3>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Incident Type</mat-label>
+          <mat-select formControlName="incidentType">
+            <mat-option value="DELAY">Flight Delay</mat-option>
+            <mat-option value="CANCELLATION">Flight Cancellation</mat-option>
+            <mat-option value="DENIED_BOARDING">Denied Boarding</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div *ngIf="incidentForm.get('incidentType')?.value === 'DELAY'">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Delay at Destination (minutes)</mat-label>
+            <input matInput type="number" formControlName="delayMinutes">
+            <mat-hint>Enter final delay at destination (includes missed connections)</mat-hint>
+          </mat-form-field>
+        </div>
+        <div *ngIf="incidentForm.get('incidentType')?.value === 'CANCELLATION'">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Days Before Departure Informed</mat-label>
+            <input matInput type="number" formControlName="cancellationDaysBefore">
+            <mat-hint>&lt;7 days = full compensation, 7-14 days = conditional, 14+ days = no compensation</mat-hint>
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>When were you informed?</mat-label>
+          <input matInput type="datetime-local" formControlName="informedAt">
+        </mat-form-field>
+        <mat-checkbox formControlName="missedConnection">Missed Connecting Flight</mat-checkbox>
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="primary" matStepperNext [disabled]="!incidentForm.valid">Next</button>
+        </div>
+      </form>
+    </mat-step>
+    
+    <mat-step [stepControl]="circumstancesForm" label="Circumstances">
+      <form [formGroup]="circumstancesForm" class="step-form">
+        <h3>Level 3: Rights Determination Data</h3>
+        <div class="checkbox-group">
+          <p class="group-label">What did the airline offer?</p>
+          <mat-checkbox formControlName="alternativeFlightOffered">Alternative Flight</mat-checkbox>
+          <mat-checkbox formControlName="offeredFood">Food / Meals</mat-checkbox>
+          <mat-checkbox formControlName="offeredDrink">Drinks / Refreshments</mat-checkbox>
+          <mat-checkbox formControlName="offeredAccommodation">Hotel Accommodation</mat-checkbox>
+          <mat-checkbox formControlName="offeredTransport">Airport-Hotel Transport</mat-checkbox>
+          <mat-checkbox formControlName="offeredPhoneCalls">Phone Calls / Communication</mat-checkbox>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="extraordinaryCircumstances">Extraordinary Circumstances</mat-checkbox>
+          <mat-form-field *ngIf="circumstancesForm.get('extraordinaryCircumstances')?.value" appearance="outline" class="full-width">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="extraordinaryCircumstanceType">
+              <mat-option value="WEATHER">Severe Weather</mat-option>
+              <mat-option value="POLITICAL">Political Instability</mat-option>
+              <mat-option value="SECURITY">Security Risk</mat-option>
+              <mat-option value="ATC_STRIKE">ATC Strike</mat-option>
+              <mat-option value="AIRPORT_STRIKE">Airport Strike</mat-option>
+              <mat-option value="ATC_DECISION">ATC Management Decision</mat-option>
+              <mat-option value="TECHNICAL">Technical Fault (NOT extraordinary per Wallentin-Hermann)</mat-option>
+              <mat-option value="AIRLINE_STRIKE">Airline Staff Strike (NOT extraordinary per Krusemann)</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="primary" matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    
+    <mat-step label="Review & Submit">
+      <div class="step-form review-step">
+        <h3>Level 4: Ready for Analysis</h3>
+        <p>Your facts will be processed through the knowledge base using Forward Chaining (4 levels):</p>
+        <ol>
+          <li><strong>Classification:</strong> Regulation applicability & distance category</li>
+          <li><strong>Qualification:</strong> Incident type & extraordinary circumstances</li>
+          <li><strong>Rights:</strong> Compensation, care, and reroute determination</li>
+          <li><strong>Strategy:</strong> Optimal procedural advice</li>
+        </ol>
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="accent" (click)="submitIncident()">
+            <mat-icon>play_arrow</mat-icon> Run Forward Chaining
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

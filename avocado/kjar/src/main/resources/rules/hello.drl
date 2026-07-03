@@ -1,0 +1,11 @@
+package rules;
+
+import com.app.Flight;
+
+rule "Regulation applicable if flight origin is EU"
+    when
+        $l: Flight(isFromEu == true, isRegulationApplicable == false)
+    then
+        modify($l) { setIsRegulationApplicable(true) };
+        System.out.println("[RULE] Regulation applicable if flight origin is EU " + $l.getFlightId());
+end

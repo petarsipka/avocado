@@ -1,0 +1,118 @@
+<div class="analysis-container" *ngIf="qualification">
+  <header>
+    <h1>Legal Analysis Result</h1>
+    <p class="subtitle">Forward Chaining Execution Trace</p>
+  </header>
+  
+  <div class="applicability-banner" [class.applicable]="qualification.regulationApplicable">
+    <mat-icon>{{ qualification.regulationApplicable ? 'check_circle' : 'cancel' }}</mat-icon>
+    <div>
+      <strong>Regulation (EC) No 261/2004</strong>
+      <span>{{ qualification.regulationApplicable ? 'IS APPLICABLE' : 'IS NOT APPLICABLE' }} to this flight</span>
+    </div>
+  </div>
+  
+  <mat-card class="trace-card">
+    <mat-card-header>
+      <mat-card-title>Rule Engine Trace</mat-card-title>
+      <mat-card-subtitle>Forward Chaining - 4 Levels</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="trace-timeline">
+        <div *ngFor="let rule of qualification.ruleTrace" class="trace-item" [class]="'level-' + rule.level">
+          <div class="trace-level">L{{ rule.level }}</div>
+          <div class="trace-content">
+            <div class="trace-header">
+              <strong>{{ rule.ruleName }}</strong>
+              <span class="article-ref">{{ rule.articleReference }}</span>
+            </div>
+            <div class="trace-body">
+              <p><strong>IF:</strong> {{ rule.condition }}</p>
+              <p><strong>THEN:</strong> {{ rule.action }}</p>
+            </div>
+            <div class="trace-status" [class.fired]="rule.fired">
+              {{ rule.fired ? '✓ RULE FIRED' : '✗ NOT FIRED' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
+  <mat-card *ngIf="qualification.compensation.applicable" class="result-card compensation">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>euro_symbol</mat-icon>
+      <mat-card-title>Compensation</mat-card-title>
+      <mat-card-subtitle>{{ qualification.compensation.article }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="compensation-amount">
+        <span class="amount">{{ qualification.compensation.amount }}</span>
+        <span class="currency">{{ qualification.compensation.currency }}</span>
+      </div>
+      <p class="compensation-reason">{{ qualification.compensation.reason }}</p>
+      <mat-chip-listbox *ngIf="qualification.compensation.reducedBy50Percent">
+        <mat-chip color="warn">Reduced by 50% (alternative flight offered)</mat-chip>
+      </mat-chip-listbox>
+    </mat-card-content>
+  </mat-card>
+  
+  <h2>Care Rights (Right to Care)</h2>
+  <div class="rights-grid">
+    <mat-card *ngFor="let right of qualification.careRights" class="right-card" [class.active]="right.applicable">
+      <mat-card-content>
+        <mat-icon>{{ right.type === 'FOOD_DRINK' ? 'restaurant' : right.type === 'PHONE_CALLS' ? 'phone' : right.type === 'HOTEL' ? 'hotel' : 'directions_car' }}</mat-icon>
+        <h3>{{ right.type | replaceUnderscore }}</h3>
+        <p>{{ right.description }}</p>
+        <span class="article">{{ right.article }}</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <h2>Reroute / Refund Rights</h2>
+  <div class="rights-grid">
+    <mat-card *ngFor="let right of qualification.rerouteRights" class="right-card" [class.active]="right.applicable">
+      <mat-card-content>
+        <mat-icon>{{ right.type === 'REFUND' ? 'money_back' : 'flight' }}</mat-icon>
+        <h3>{{ right.type === 'REFUND' ? 'Full Refund' : 'Alternative Flight' }}</h3>
+        <p>{{ right.description }}</p>
+        <span class="article">{{ right.article }}</span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <h2>Strategic Advice (Level 4)</h2>
+  <mat-accordion>
+    <mat-expansion-panel *ngFor="let advice of qualification.strategicAdvice" [expanded]="advice.priority === 1">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <span class="priority-badge">{{ advice.priority }}</span>
+          {{ advice.title }}
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ advice.category }} - {{ advice.articleReference }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <p>{{ advice.description }}</p>
+      <div *ngIf="advice.deadline" class="deadline-warning">
+        <mat-icon>timer</mat-icon>
+        <span>Deadline: {{ advice.deadline }}</span>
+      </div>
+      <mat-action-row *ngIf="advice.actionRequired">
+        <button mat-button color="primary">MARK AS ACTION REQUIRED</button>
+      </mat-action-row>
+    </mat-expansion-panel>
+  </mat-accordion>
+  
+  <div class="analysis-actions">
+    <button mat-raised-button color="primary" (click)="startComplaint()">
+      <mat-icon>gavel</mat-icon> Start Complaint Process
+    </button>
+    <button mat-raised-button routerLink="/query">
+      <mat-icon>psychology</mat-icon> Verify with Backward Chaining
+    </button>
+    <button mat-raised-button routerLink="/evidence">
+      <mat-icon>folder</mat-icon> Evidence Checklist
+    </button>
+  </div>
+</div>

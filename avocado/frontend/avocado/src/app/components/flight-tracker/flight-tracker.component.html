@@ -1,0 +1,81 @@
+<div class="flight-tracker-container">
+  <h1>Flight Tracking & CEP Monitoring</h1>
+  
+  <div class="tracker-layout">
+    <div class="tracker-sidebar">
+      <mat-card>
+        <mat-card-header><mat-card-title>Add Flight</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="flightForm" (ngSubmit)="addFlight()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Flight Number (e.g., LH1411)</mat-label>
+              <input matInput formControlName="flightNumber" placeholder="LH1411">
+            </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>From</mat-label>
+                <input matInput formControlName="departureAirport" placeholder="BEG">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>To</mat-label>
+                <input matInput formControlName="arrivalAirport" placeholder="FRA">
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Scheduled Departure</mat-label>
+              <input matInput type="datetime-local" formControlName="scheduledDeparture">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Airline</mat-label>
+              <input matInput formControlName="airline">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Distance (km)</mat-label>
+              <input matInput type="number" formControlName="distanceKm">
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit" [disabled]="!flightForm.valid">
+              <mat-icon>add</mat-icon> Add Flight
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+      
+      <mat-card class="flight-list">
+        <mat-card-header><mat-card-title>Monitored Flights</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item *ngFor="let flight of flights" (click)="selectFlight(flight)" [class.selected]="selectedFlight?.id === flight.id">
+              <mat-icon matListItemIcon>flight</mat-icon>
+              <div matListItemTitle>{{ flight.flightNumber }}</div>
+              <div matListItemLine>{{ flight.departureCity }} → {{ flight.arrivalCity }}</div>
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    
+    <div class="tracker-main" *ngIf="selectedFlight">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ selectedFlight.flightNumber }} - Event Stream</mat-card-title>
+          <mat-card-subtitle>CEP Real-Time Processing</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="timeline">
+            <div *ngFor="let event of flightEvents" class="timeline-item" [class]="event.severity.toLowerCase()">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="status">{{ event.status }}</span>
+                  <span class="time">{{ event.timestamp | date:'HH:mm' }}</span>
+                </div>
+                <p>{{ event.message }}</p>
+                <div *ngIf="event.delayMinutes" class="delay-badge">Delay: {{ event.delayMinutes }} min</div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
