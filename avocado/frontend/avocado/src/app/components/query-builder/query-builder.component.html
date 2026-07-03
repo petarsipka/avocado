@@ -1,0 +1,97 @@
+<div class="query-container">
+  <h1>Legal Query Engine</h1>
+  <p class="subtitle">Backward Chaining - Verify Specific Legal Goals</p>
+  
+  <div class="query-layout">
+    <mat-card class="goals-card">
+      <mat-card-header>
+        <mat-card-title>Select Legal Goal</mat-card-title>
+        <mat-card-subtitle>What right do you want to verify?</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item *ngFor="let goal of goals" (click)="selectGoal(goal)" [class.selected]="selectedGoal?.id === goal.id">
+            <mat-icon matListItemIcon>{{ goal.icon }}</mat-icon>
+            <div matListItemTitle>{{ goal.name }}</div>
+            <div matListItemLine>{{ goal.description }}</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+    
+    <div class="query-main">
+      <mat-card *ngIf="selectedGoal" class="facts-card">
+        <mat-card-header>
+          <mat-card-title>Enter Known Facts</mat-card-title>
+          <mat-card-subtitle>For goal: {{ selectedGoal.name }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="factsForm" class="facts-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Delay at Destination (min)</mat-label>
+              <input matInput type="number" formControlName="delayMinutes">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Distance (km)</mat-label>
+              <input matInput type="number" formControlName="distanceKm">
+            </mat-form-field>
+            <div class="checkbox-row">
+              <mat-checkbox formControlName="isEUDeparture">EU Departure</mat-checkbox>
+              <mat-checkbox formControlName="isEUCarrier">EU Carrier</mat-checkbox>
+              <mat-checkbox formControlName="extraordinaryCircumstances">Extraordinary Circumstances</mat-checkbox>
+            </div>
+          </form>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="verifyGoal()" [disabled]="loading">
+            <mat-icon>psychology</mat-icon> Run Backward Chaining
+          </button>
+        </mat-card-actions>
+      </mat-card>
+      
+      <mat-card *ngIf="result" class="result-card" [class.achievable]="result.achievable">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>{{ result.achievable ? 'check_circle' : 'cancel' }}</mat-icon>
+          <mat-card-title>{{ result.goalName }}</mat-card-title>
+          <mat-card-subtitle>{{ result.articleReference }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="conclusion">
+            <h3>Conclusion</h3>
+            <p>{{ result.conclusion }}</p>
+          </div>
+          
+          <h4>Proof Tree (Backward Trace)</h4>
+          <div class="proof-tree">
+            <div class="goal-node"><strong>GOAL: {{ result.goalName }}</strong></div>
+            <div class="conditions-list">
+              <div *ngFor="let cond of result.conditions" class="condition-item" [class.satisfied]="cond.satisfied">
+                <mat-icon>{{ cond.satisfied ? 'check' : 'close' }}</mat-icon>
+                <div>
+                  <strong>{{ cond.description }}</strong>
+                  <small>{{ cond.articleReference }}</small>
+                  <p *ngIf="cond.evidence">Evidence: {{ cond.evidence }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="result.missingFacts.length > 0" class="missing-facts">
+            <h4>Missing Facts</h4>
+            <ul><li *ngFor="let fact of result.missingFacts">{{ fact }}</li></ul>
+          </div>
+          
+          <div class="next-steps">
+            <h4>Next Steps</h4>
+            <p>{{ result.nextSteps }}</p>
+          </div>
+          
+          <div class="rule-trace">
+            <h4>Rule Trace</h4>
+            <code *ngFor="let trace of result.ruleTrace">{{ trace }}</code>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

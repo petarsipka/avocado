@@ -1,0 +1,26 @@
+<div class="evidence-container">
+  <h1>Evidence Collection Guide</h1>
+  <p class="subtitle">Recommended evidence for EU 261/2004 claims</p>
+  
+  <div class="evidence-categories">
+    <mat-card *ngFor="let cat of categories" class="category-card">
+      <mat-card-header>
+        <mat-card-title>{{ cat.category }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngFor="let item of cat.items" class="evidence-item">
+          <div class="item-header">
+            <mat-checkbox></mat-checkbox>
+            <strong>{{ item.type }}</strong>
+            <span class="importance" [class]="item.importance.toLowerCase()">{{ item.importance }}</span>
+          </div>
+          <p>{{ item.description }}</p>
+          <div class="tip">
+            <mat-icon>lightbulb</mat-icon>
+            <span>{{ item.tip }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

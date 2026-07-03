@@ -1,0 +1,132 @@
+.query-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.query-container h1 {
+  color: #1565c0;
+}
+
+.query-container .subtitle {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.query-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 24px;
+}
+
+.goals-card mat-list-item {
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.goals-card mat-list-item:hover,
+.goals-card mat-list-item.selected {
+  background: #e3f2fd;
+}
+
+.facts-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.facts-form .checkbox-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.result-card {
+  margin-top: 24px;
+}
+
+.result-card.achievable {
+  border: 2px solid #2e7d32;
+}
+
+.result-card:not(.achievable) {
+  border: 2px solid #c62828;
+}
+
+.conclusion {
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.conclusion h3 {
+  margin-top: 0;
+  color: #1565c0;
+}
+
+.proof-tree .goal-node {
+  padding: 12px;
+  background: #1565c0;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.proof-tree .conditions-list {
+  padding-left: 24px;
+  border-left: 2px solid #ccc;
+}
+
+.proof-tree .condition-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background: #ffebee;
+}
+
+.proof-tree .condition-item.satisfied {
+  background: #e8f5e9;
+}
+
+.proof-tree .condition-item mat-icon {
+  color: #c62828;
+}
+
+.proof-tree .condition-item.satisfied mat-icon {
+  color: #2e7d32;
+}
+
+.proof-tree .condition-item small {
+  display: block;
+  color: #666;
+}
+
+.missing-facts {
+  background: #fff3e0;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.next-steps {
+  padding: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.rule-trace {
+  margin-top: 16px;
+}
+
+.rule-trace code {
+  display: block;
+  font-family: monospace;
+  padding: 4px 0;
+  color: #666;
+}
