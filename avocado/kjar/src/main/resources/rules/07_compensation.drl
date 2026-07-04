@@ -1,0 +1,39 @@
+package rules;
+
+import com.app.*;
+
+rule "Compensation amount SHORT - 250 EUR"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.COMPENSATION)
+        $f: Flight(distanceCategory == DistanceCategory.SHORT)
+        $i: Incident(flightId == $f.flightId)
+        not Compensation(article == "Art. 7(1)(a)")
+    then
+        double factor = ($i.getIsReroutingOffered() && $i.getReroutingArriveLaterHours() <= 2) ? 0.5 : 1.0;
+        insert(new Compensation("Art. 7(1)(a)", 250 * factor, "Short distance compensation"));
+end
+
+rule "Compensation amount MEDIUM - 400 EUR"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.COMPENSATION)
+        $f: Flight(distanceCategory == DistanceCategory.MEDIUM)
+        $i: Incident(flightId == $f.flightId)
+        not Compensation(article == "Art. 7(1)(b)")
+    then
+        double factor = ($i.getIsReroutingOffered() && $i.getReroutingArriveLaterHours() <= 3) ? 0.5 : 1.0;
+        insert(new Compensation("Art. 7(1)(b)", 400 * factor, "Medium distance compensation"));
+end
+
+rule "Compensation amount LONG - 600 EUR"
+    agenda-group "level3"
+    when
+        exists Right(type == RightType.COMPENSATION)
+        $f: Flight(distanceCategory == DistanceCategory.LONG)
+        $i: Incident(flightId == $f.flightId)
+        not Compensation(article == "Art. 7(1)(c)")
+    then
+        double factor = ($i.getIsReroutingOffered() && $i.getReroutingArriveLaterHours() <= 4) ? 0.5 : 1.0;
+        insert(new Compensation("Art. 7(1)(c)", 600 * factor, "Long distance compensation"));
+end

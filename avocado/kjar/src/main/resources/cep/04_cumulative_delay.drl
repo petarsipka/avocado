@@ -1,0 +1,33 @@
+package cep;
+
+import com.app.*;
+
+rule "CEP - track delay per journey segment"
+    when
+        FlightStatusEvent($res: reservationId, $fid: flightId, status == FlightStatus.DELAYED,
+                          $d: delayMinutes) from entry-point "flight-status-stream"
+        not SegmentDelay(reservationId == $res, flightId == $fid)
+    then
+        insert(new SegmentDelay($res, $fid, $d));
+end
+
+rule "CEP - update segment delay to latest maximum"
+    when
+        FlightStatusEvent($res: reservationId, $fid: flightId, status == FlightStatus.DELAYED,
+                          $d: delayMinutes) from entry-point "flight-status-stream"
+        $s: SegmentDelay(reservationId == $res, flightId == $fid, delayMinutes < $d)
+    then
+        modify($s) { setDelayMinutes($d) };
+end
+
+rule "CEP - cumulative delay across segments reaches 3h"
+    when
+        SegmentDelay($res: reservationId)
+        Number(intValue >= 180) from accumulate(
+            SegmentDelay(reservationId == $res, $d: delayMinutes),
+            sum($d)
+        )
+        not Notification(article == "Art. 7 (cumulative, spec 3.5)")
+    then
+        insert(new Notification("Cumulative delay across journey segments reached 3h - compensation threshold at the final destination.", "Art. 7 (cumulative, spec 3.5)"));
+end

@@ -1,0 +1,103 @@
+.analysis-container {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+}
+
+.facts-card,
+.compensation-card,
+.advice-card {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.compensation-card .amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-right: 12px;
+}
+
+.compensation-card.no-compensation {
+  border-left: 4px solid #ef6c00;
+}
+
+.rights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rights-grid mat-card {
+  padding: 16px;
+}
+
+.right-item,
+.advice-item {
+  border-left: 3px solid #1976d2;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  background: #f5f9ff;
+}
+
+.right-item p,
+.advice-item p {
+  margin: 4px 0;
+}
+
+.article {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.muted {
+  color: #888;
+}
+
+.actions {
+  margin: 16px 0;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.applicability-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.applicability-banner.applicable {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.applicability-banner.not-applicable {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.applicability-banner p {
+  margin: 4px 0 0;
+}

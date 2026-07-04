@@ -1,0 +1,52 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Passenger Rights Protection System</h1>
+    <p class="subtitle">Knowledge-based system for Regulation (EC) 261/2004 — pick a scenario to demonstrate the rules</p>
+  </header>
+
+  <h2>Forward & backward chaining scenarios</h2>
+  <div class="scenario-grid">
+    <mat-card *ngFor="let s of scenarios" class="scenario-card">
+      <mat-card-title>{{ s.name }}</mat-card-title>
+      <mat-card-subtitle>{{ s.specRef }}</mat-card-subtitle>
+      <mat-card-content>
+        <p>{{ s.description }}</p>
+        <p class="expected"><mat-icon>gavel</mat-icon> {{ s.expected }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" [routerLink]="['/incident']" [queryParams]="{ scenario: s.id }">
+          <mat-icon>account_tree</mat-icon> Analyze
+        </button>
+        <button mat-stroked-button [routerLink]="['/query']" [queryParams]="{ scenario: s.id }">
+          <mat-icon>psychology</mat-icon> Verify goal
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <h2>Real-time CEP scenarios</h2>
+  <div class="cep-grid">
+    <mat-card *ngFor="let p of cepPresets" class="cep-card">
+      <mat-card-title>{{ p.name }}</mat-card-title>
+      <mat-card-subtitle>{{ p.specRef }}</mat-card-subtitle>
+      <mat-card-actions>
+        <button mat-raised-button color="accent" [routerLink]="['/flights']" [queryParams]="{ preset: p.id }">
+          <mat-icon>play_arrow</mat-icon> Simulate
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <h2>Other mechanisms</h2>
+  <div class="cep-grid">
+    <mat-card class="cep-card">
+      <mat-card-title>Rule templates</mat-card-title>
+      <mat-card-subtitle>Spec §4.1 — user-defined thresholds</mat-card-subtitle>
+      <mat-card-actions>
+        <button mat-raised-button routerLink="/custom-rules">
+          <mat-icon>rule</mat-icon> Open
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,205 @@
+<div class="wizard-container">
+  <h1>Report Incident</h1>
+  <p class="subtitle">Forward chaining through 4 rule levels (Reg. 261/2004)</p>
+
+  <mat-card class="scenario-picker">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Load a flight / scenario (auto-fills all fields)</mat-label>
+      <mat-select [value]="selectedScenarioId" (selectionChange)="loadScenario($event.value)">
+        <mat-option *ngFor="let s of scenarios" [value]="s.id">
+          {{ s.name }} — {{ s.specRef }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <p *ngIf="selectedScenarioId" class="expected-hint">
+      Expected result: {{ scenarioService.byId(selectedScenarioId)?.expected }}
+    </p>
+  </mat-card>
+
+  <mat-stepper [linear]="false" #stepper>
+    <mat-step [stepControl]="flightForm" label="Flight">
+      <form [formGroup]="flightForm" class="step-form">
+        <h3>Level 1: Scope & distance (Art. 3, Art. 7(1))</h3>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Flight ID</mat-label>
+            <input matInput formControlName="flightId">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Carrier</mat-label>
+            <input matInput formControlName="operatingCarrier">
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From (airport)</mat-label>
+            <input matInput formControlName="departureAirport">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>To (airport)</mat-label>
+            <input matInput formControlName="arrivalAirport">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Distance (km)</mat-label>
+            <input matInput type="number" formControlName="flightDistanceKm">
+            <mat-hint>≤1500 SHORT | 1500–3500 MEDIUM | >3500 LONG</mat-hint>
+          </mat-form-field>
+        </div>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="isFromEu">Departure from EU</mat-checkbox>
+          <mat-checkbox formControlName="isToEu">Arrival to EU</mat-checkbox>
+          <mat-checkbox formControlName="isEuCarrier">EU carrier</mat-checkbox>
+          <mat-checkbox formControlName="isWithinEu">Whole flight within EU</mat-checkbox>
+          <mat-checkbox formControlName="hasConfirmedReservation">Confirmed reservation</mat-checkbox>
+        </div>
+        <div class="step-actions">
+          <button mat-raised-button color="primary" matStepperNext [disabled]="!flightForm.valid">Next</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step [stepControl]="passengerForm" label="Passenger">
+      <form [formGroup]="passengerForm" class="step-form">
+        <h3>Passenger data (Art. 3(3), Art. 10, Art. 11)</h3>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Ticket class</mat-label>
+            <mat-select formControlName="travelClass">
+              <mat-option value="ECONOMY">Economy</mat-option>
+              <mat-option value="BUSINESS">Business</mat-option>
+              <mat-option value="FIRST">First</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Ticket price (€)</mat-label>
+            <input matInput type="number" formControlName="ticketPrice">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Passenger choice (Art. 8)</mat-label>
+            <mat-select formControlName="choice">
+              <mat-option value="NONE">Not decided</mat-option>
+              <mat-option value="REFUND">Refund</mat-option>
+              <mat-option value="REROUTING">Rerouting</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="isCheckedInOnTime">Checked in on time</mat-checkbox>
+          <mat-checkbox formControlName="isReducedMobility">Reduced mobility</mat-checkbox>
+          <mat-checkbox formControlName="isSmallChild">Small child</mat-checkbox>
+          <mat-checkbox formControlName="isPregnant">Pregnant</mat-checkbox>
+          <mat-checkbox formControlName="isTravelingForFree">Traveling for free</mat-checkbox>
+          <mat-checkbox formControlName="isFrequentFlyer">Frequent flyer program</mat-checkbox>
+        </div>
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="primary" matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step [stepControl]="incidentForm" label="Incident">
+      <form [formGroup]="incidentForm" class="step-form">
+        <h3>Level 2: Incident qualification (Art. 4, 5, 6)</h3>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Incident type</mat-label>
+            <mat-select formControlName="type">
+              <mat-option value="DELAY">Delay (Art. 6)</mat-option>
+              <mat-option value="CANCELLATION">Cancellation (Art. 5)</mat-option>
+              <mat-option value="DENIED_BOARDING">Denied boarding (Art. 4)</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Cause (extraordinary check, Art. 5(3))</mat-label>
+            <mat-select formControlName="cause">
+              <mat-option value="NONE">None / airline's fault</mat-option>
+              <mat-option value="TECHNICAL_FAULT">Technical fault (NOT extraordinary)</mat-option>
+              <mat-option value="WEATHER">Severe weather</mat-option>
+              <mat-option value="POLITICAL_INSTABILITY">Political instability</mat-option>
+              <mat-option value="SECURITY_RISK">Security risk</mat-option>
+              <mat-option value="ATC_STRIKE">ATC strike</mat-option>
+              <mat-option value="AIRPORT_STRIKE">Airport strike</mat-option>
+              <mat-option value="ATM_DECISION">ATM decision</mat-option>
+              <mat-option value="AIRLINE_STAFF_STRIKE">Airline staff strike (NOT extraordinary)</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="incidentForm.get('type')?.value === 'DELAY'" class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Delay (hours)</mat-label>
+            <input matInput type="number" formControlName="delayHours">
+            <mat-hint>Care thresholds: 2h/3h/4h by distance; 5h refund</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Delay at destination (hours)</mat-label>
+            <input matInput type="number" formControlName="delayAtDestinationHours">
+            <mat-hint>≥3h → compensation (Sturgeon C-402/07)</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="incidentForm.get('type')?.value === 'CANCELLATION'" class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Informed days before departure</mat-label>
+            <input matInput type="number" formControlName="noticeDaysBefore">
+            <mat-hint>14+ no compensation; 7-14 / &lt;7 conditional (Art. 5(1)(c))</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="incidentForm.get('type')?.value === 'DENIED_BOARDING'" class="checkbox-group">
+          <mat-checkbox formControlName="isDeniedAgainstWill">Denied against passenger's will</mat-checkbox>
+          <mat-checkbox formControlName="isVoluntarilyGaveUp">Voluntarily gave up the seat</mat-checkbox>
+          <mat-checkbox formControlName="isDeniedForSafetyReasons">Denied for health/safety/documents</mat-checkbox>
+        </div>
+
+        <mat-divider></mat-divider>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="isRequiresOvernightStay">Overnight stay required (hotel, Art. 9(1)(b))</mat-checkbox>
+          <mat-checkbox formControlName="isDowngraded">Seated in lower class (Art. 10)</mat-checkbox>
+          <mat-checkbox formControlName="isReroutingOffered">Rerouting was offered</mat-checkbox>
+        </div>
+        <div *ngIf="incidentForm.get('isReroutingOffered')?.value" class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Rerouting departs earlier (h)</mat-label>
+            <input matInput type="number" formControlName="reroutingDepartEarlierHours">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Rerouting arrives later (h)</mat-label>
+            <input matInput type="number" formControlName="reroutingArriveLaterHours">
+            <mat-hint>≤2/3/4h by distance → compensation halved (Art. 7(2))</mat-hint>
+          </mat-form-field>
+        </div>
+        <div class="checkbox-group">
+          <mat-checkbox formControlName="isPartOfJourneyCompleted">Part of journey already completed</mat-checkbox>
+          <mat-checkbox formControlName="isFlightNoLongerServesPurpose">Flight no longer serves its purpose</mat-checkbox>
+        </div>
+
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="primary" matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step label="Run">
+      <div class="step-form review-step">
+        <h3>Run forward chaining</h3>
+        <p>The facts are inserted into the Drools session and evaluated through 4 agenda groups:</p>
+        <ol>
+          <li><strong>Level 1:</strong> regulation scope (Art. 3) + distance category (Art. 7(1)) + extraordinary check</li>
+          <li><strong>Level 2:</strong> incident qualification (Art. 4 / 5 / 6)</li>
+          <li><strong>Level 3:</strong> compensation amount, care, refund/rerouting, downgrade (Art. 7-10)</li>
+          <li><strong>Level 4:</strong> strategic advice</li>
+        </ol>
+        <p class="error" *ngIf="error">{{ error }}</p>
+        <div class="step-actions">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-raised-button color="accent" (click)="submitIncident()" [disabled]="loading">
+            <mat-icon>play_arrow</mat-icon> {{ loading ? 'Running...' : 'Run Forward Chaining' }}
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>

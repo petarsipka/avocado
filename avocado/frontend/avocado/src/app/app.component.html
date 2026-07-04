@@ -1,0 +1,30 @@
+<mat-sidenav-container class="app-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="logo">
+      <mat-icon>flight_takeoff</mat-icon>
+      <span>EU 261 KBS</span>
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item *ngFor="let item of navItems" [routerLink]="item.path" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </a>
+    </mat-nav-list>
+
+    <div class="sidenav-footer">
+      <small>Knowledge-Based Systems</small>
+      <small>Regulation (EC) 261/2004</small>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <span>Passenger Rights Protection System</span>
+    </mat-toolbar>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

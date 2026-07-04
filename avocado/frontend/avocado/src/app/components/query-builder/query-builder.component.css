@@ -1,0 +1,137 @@
+.query-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.scenario-picker {
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.scenario-facts {
+  color: #555;
+  margin: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.query-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.goals-card,
+.result-card {
+  padding: 16px;
+}
+
+mat-list-item {
+  cursor: pointer;
+}
+
+mat-list-item.selected {
+  background: #e3f2fd;
+  border-radius: 8px;
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.verdict.satisfied {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.verdict.not-satisfied {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.verdict p {
+  margin: 4px 0 0;
+}
+
+.muted {
+  color: #888;
+}
+
+.error {
+  color: #c62828;
+  margin-top: 12px;
+}
+
+code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.conditions {
+  margin-top: 16px;
+}
+
+.conditions h4 {
+  margin-bottom: 8px;
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.condition-item.condition-ok {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.condition-item.condition-fail {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.condition-item mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.facts-form {
+  margin-top: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row mat-form-field {
+  flex: 1;
+  min-width: 150px;
+}
+
+.checkbox-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}

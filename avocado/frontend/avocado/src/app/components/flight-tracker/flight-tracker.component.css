@@ -1,0 +1,75 @@
+.tracker-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+h2 {
+  margin: 24px 0 12px;
+}
+
+.preset-grid,
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.preset-card,
+.custom-card {
+  padding: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.event-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.custom-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.error {
+  color: #c62828;
+  margin-top: 12px;
+}
+
+.muted {
+  color: #888;
+}
+
+.notification-item {
+  border-left: 3px solid #1976d2;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: #f5f9ff;
+}
+
+.notification-item p {
+  margin: 0 0 4px;
+}
+
+.article {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.result-grid mat-card {
+  padding: 16px;
+}

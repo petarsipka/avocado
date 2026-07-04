@@ -1,0 +1,52 @@
+<div class="custom-rules-container">
+  <h1>Rule Templates</h1>
+  <p class="subtitle">
+    Spec §4.1 — a passenger or legal advisor defines a new threshold rule.
+    The backend compiles a DRT template into a DRL rule at runtime (ObjectDataCompiler) and fires it.
+  </p>
+
+  <div class="layout">
+    <mat-card>
+      <mat-card-title>Define a threshold rule</mat-card-title>
+      <mat-card-content>
+        <form [formGroup]="form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Minimum delay (hours) to activate the rule</mat-label>
+            <input matInput type="number" formControlName="minDelayHours">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Article / label</mat-label>
+            <input matInput formControlName="article">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description of the granted right</mat-label>
+            <input matInput formControlName="description">
+          </mat-form-field>
+          <mat-divider></mat-divider>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Test incident: delay (hours)</mat-label>
+            <input matInput type="number" formControlName="testDelayHours">
+            <mat-hint>The generated rule fires if this delay ≥ the threshold above</mat-hint>
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="apply()" [disabled]="loading || !form.valid">
+            <mat-icon>play_arrow</mat-icon> {{ loading ? 'Running...' : 'Compile & run' }}
+          </button>
+        </form>
+        <p class="error" *ngIf="error">{{ error }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="rights">
+      <mat-card-title>Result</mat-card-title>
+      <mat-card-content>
+        <p *ngIf="!rights.length" class="muted">
+          The generated rule did not fire — the test delay is below the threshold.
+        </p>
+        <div class="right-item" *ngFor="let r of rights">
+          <strong>{{ r.type }}</strong> <span class="article">{{ r.article }}</span>
+          <p>{{ r.description }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

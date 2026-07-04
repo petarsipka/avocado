@@ -1,0 +1,39 @@
+package rules;
+
+import com.app.*;
+
+rule "Advice - preserve evidence when compensation due"
+    agenda-group "level4"
+    when
+        exists Right(type == RightType.COMPENSATION)
+        not Advice(article == "Art. 7 evidence")
+    then
+        insert(new Advice("Keep your boarding pass, flight status screenshots and all airline messages.", "Art. 7 evidence"));
+end
+
+rule "Advice - extraordinary circumstance rights remain"
+    agenda-group "level4"
+    when
+        Incident(isExtraordinary == true)
+        not Advice(article == "Art. 5(3)")
+    then
+        insert(new Advice("No compensation under Art. 7, but the right to care (Art. 9) and choice (Art. 8) remain.", "Art. 5(3)"));
+end
+
+rule "Advice - priority assistance for vulnerable passengers"
+    agenda-group "level4"
+    when
+        Passenger(isReducedMobility == true || isSmallChild == true || isPregnant == true)
+        not Advice(article == "Art. 11")
+    then
+        insert(new Advice("Actively request priority assistance; the airline is obliged to provide it.", "Art. 11"));
+end
+
+rule "Advice - self-book hotel if airline refuses care"
+    agenda-group "level4"
+    when
+        exists Right(type == RightType.HOTEL)
+        not Advice(article == "Art. 9 hotel")
+    then
+        insert(new Advice("If the airline refuses care, photograph the refusal, book a hotel yourself and keep receipts.", "Art. 9 hotel"));
+end

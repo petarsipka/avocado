@@ -1,0 +1,102 @@
+<div class="analysis-container">
+  <h1>Legal Analysis</h1>
+  <p class="subtitle">Result of forward chaining over Regulation (EC) 261/2004</p>
+
+  <mat-card *ngIf="!response" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>No analysis result yet. Report an incident first.</p>
+    <button mat-raised-button color="primary" (click)="goToWizard()">Report Incident</button>
+  </mat-card>
+
+  <ng-container *ngIf="response">
+    <div class="applicability-banner" [class.applicable]="response.regulationApplicable" [class.not-applicable]="!response.regulationApplicable">
+      <mat-icon>{{ response.regulationApplicable ? 'check_circle' : 'cancel' }}</mat-icon>
+      <div>
+        <strong>Regulation (EC) 261/2004 {{ response.regulationApplicable ? 'APPLIES' : 'DOES NOT APPLY' }}</strong>
+        <p *ngIf="response.regulationApplicable">
+          Scope conditions of Art. 3 are met.
+          <span *ngIf="response.distanceCategory">Distance category: {{ response.distanceCategory }}.</span>
+        </p>
+        <p *ngIf="!response.regulationApplicable">
+          Scope conditions of Art. 3 are not met (e.g. non-EU departure with a non-EU carrier, or no confirmed reservation) — no rights arise under this regulation.
+        </p>
+      </div>
+    </div>
+
+    <mat-card class="facts-card" *ngIf="flight">
+      <mat-card-title>Analyzed facts</mat-card-title>
+      <mat-card-content>
+        <p>
+          <strong>{{ flight.flightId }}</strong>
+          {{ flight.departureAirport }} → {{ flight.arrivalAirport }},
+          {{ flight.flightDistanceKm }} km, {{ flight.operatingCarrier }}
+        </p>
+        <p *ngIf="incident">
+          Incident: <strong>{{ incident.type }}</strong>
+          <span *ngIf="incident.type === 'DELAY'"> — {{ incident.delayHours }}h delay, {{ incident.delayAtDestinationHours }}h at destination</span>
+          <span *ngIf="incident.type === 'CANCELLATION'"> — informed {{ incident.noticeDaysBefore }} days before</span>
+          <span *ngIf="incident.cause !== 'NONE'"> — cause: {{ incident.cause | replaceUnderscore }}</span>
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="compensation-card" [class.no-compensation]="!response.compensations.length">
+      <mat-card-title>
+        <mat-icon>euro</mat-icon> Compensation
+      </mat-card-title>
+      <mat-card-content>
+        <div *ngIf="response.compensations.length; else noComp">
+          <div class="compensation-item" *ngFor="let c of response.compensations">
+            <span class="amount">{{ c.amountEur | number:'1.0-2' }} €</span>
+            <span class="article">{{ c.article }}</span>
+            <p>{{ c.explanation }}</p>
+          </div>
+        </div>
+        <ng-template #noComp>
+          <p>No financial compensation for these facts (e.g. extraordinary circumstance, early notice, or below threshold).</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="rights-grid">
+      <mat-card>
+        <mat-card-title><mat-icon>restaurant</mat-icon> Right to care (Art. 9)</mat-card-title>
+        <mat-card-content>
+          <p *ngIf="!careRights.length" class="muted">Not activated.</p>
+          <div class="right-item" *ngFor="let r of careRights">
+            <strong>{{ r.type | replaceUnderscore }}</strong> <span class="article">{{ r.article }}</span>
+            <p>{{ r.description }}</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-title><mat-icon>swap_horiz</mat-icon> Refund / rerouting (Art. 8)</mat-card-title>
+        <mat-card-content>
+          <p *ngIf="!choiceRights.length" class="muted">Not activated.</p>
+          <div class="right-item" *ngFor="let r of choiceRights">
+            <strong>{{ r.type | replaceUnderscore }}</strong> <span class="article">{{ r.article }}</span>
+            <p>{{ r.description }}</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <mat-card class="advice-card">
+      <mat-card-title><mat-icon>lightbulb</mat-icon> Strategic advice (Level 4)</mat-card-title>
+      <mat-card-content>
+        <p *ngIf="!response.advice.length" class="muted">No advice generated.</p>
+        <div class="advice-item" *ngFor="let a of response.advice">
+          <p>{{ a.text }}</p>
+          <span class="article">{{ a.article }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="actions">
+      <button mat-raised-button color="primary" (click)="goToWizard()">
+        <mat-icon>replay</mat-icon> Analyze another incident
+      </button>
+    </div>
+  </ng-container>
+</div>
