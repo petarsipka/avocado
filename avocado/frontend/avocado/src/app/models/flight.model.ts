@@ -1,63 +1,29 @@
-export type FlightStatus = 'SCHEDULED' | 'ON_TIME' | 'DELAYED' | 'CANCELLED' | 'DEPARTED' | 'LANDED';
+export type FlightStatus = 'ON_TIME' | 'DELAYED' | 'CANCELLED' | 'DEPARTED' | 'LANDED';
 export type DistanceCategory = 'SHORT' | 'MEDIUM' | 'LONG';
 
-/** Backend Flight model from Drools facts */
+/** Backend Flight fact */
 export interface Flight {
-  flightId: string;           // from backend
-  date?: string;              // from backend
-  departureAirport: string;   // from backend
-  arrivalAirport: string;     // from backend
-  operatingCarrier: string;   // from backend (replaces airline)
-  isFromEu: boolean;          // from backend (replaces isEUDeparture)
-  isToEu: boolean;            // from backend (replaces isEUDestination)
-  isEuCarrier: boolean;       // from backend
-  isWithinEu: boolean;        // from backend
-  hasConfirmedReservation: boolean; // from backend
-  flightDistanceKm: number;   // from backend (replaces distanceKm)
-  distanceCategory: DistanceCategory; // from backend
-  reservationId?: string;     // from backend
-  isRegulationApplicable: boolean; // from backend
-  
-  // UI-only fields (not sent to backend)
-  flightNumber?: string;      // for display
-  departureCity?: string;     // for display
-  arrivalCity?: string;       // for display
-  scheduledDeparture?: string; // for display
-  scheduledArrival?: string;  // for display
-  status?: FlightStatus;      // for UI state (SCHEDULED, DELAYED, etc)
-  delayMinutes?: number;      // for CEP events
-}
-
-/** For UI mock data that has display properties */
-export interface FlightDisplay extends Flight {
-  flightNumber: string;
-  airline?: string; // for display only
-  airlineCode?: string; // for display only
-  departureCity: string;
-  arrivalCity: string;
-  scheduledDeparture: string;
-  scheduledArrival: string;
-  status: FlightStatus;
-}
-
-export interface FlightStatusEvent {
-  id: string;
   flightId: string;
-  flightNumber: string;
-  status: FlightStatus;
-  timestamp: string;
-  delayMinutes?: number;
-  newEta?: string;
-  message: string;
-  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  date?: string;
+  departureAirport?: string;
+  arrivalAirport?: string;
+  operatingCarrier?: string;
+  isFromEu: boolean;
+  isToEu: boolean;
+  isEuCarrier: boolean;
+  isWithinEu: boolean;
+  hasConfirmedReservation: boolean;
+  flightDistanceKm: number;
+  distanceCategory?: DistanceCategory | null; // null so backend Level 1 rules derive it
+  reservationId?: string;
+  isRegulationApplicable?: boolean;
 }
 
-export interface ConnectingFlight {
-  id: string;
-  firstFlightId: string;
-  secondFlightId: string;
-  reservationCode: string;
-  firstFlightLanded?: string;
-  secondFlightDeparted?: string;
-  missed: boolean;
+/** Backend FlightStatusEvent for CEP simulation (timestamp = ms from simulation start) */
+export interface FlightStatusEvent {
+  flightId: string;
+  status: FlightStatus;
+  timestamp: number;
+  delayMinutes: number;
+  reservationId: string;
 }

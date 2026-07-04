@@ -2,56 +2,41 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiConfigService } from './api-config.service';
-import { Incident, IncidentFacts } from '../models/incident.model';
+import { Incident } from '../models/incident.model';
 import { Flight } from '../models/flight.model';
 import { Passenger } from '../models/passenger.model';
-import { LegalResultResponse } from '../models/legal.model';
-
-/** Backend response for question verification */
-export interface QuestionResponse {
-  goal: string;
-  satisfied: boolean;
-}
+import { LegalResultResponse, QuestionResponse, Right } from '../models/legal.model';
+import { CepResult, SimulationData } from '../models/cep.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReasoningService {
   constructor(private http: HttpClient, private apiConfig: ApiConfigService) {}
 
-  /**
-   * USED: Send incident facts to backend Drools engine for legal analysis
-   * @param flight Flight data
-   * @param passenger Passenger data
-   * @param incident Incident/disruption data
-   * @returns Observable with compensations, rights, and advice from backend
-   */
+  /** Forward chaining: POST /api/incident */
   processIncident(flight: Flight, passenger: Passenger, incident: Incident): Observable<LegalResultResponse> {
-    const url = `${this.apiConfig.baseUrl}/incident`;
-    const payload = {
-      flight,
-      passenger,
-      incident
-    };
-    console.debug('[ReasoningService] processIncident payload', payload);
-    return this.http.post<LegalResultResponse>(url, payload);
+    return this.http.post<LegalResultResponse>(`${this.apiConfig.baseUrl}/incident`, { flight, passenger, incident });
   }
 
-  /**
-   * USED: Query backend using backward-chaining to verify if a specific goal is satisfied
-   * @param goal The goal/right to check (e.g., 'COMPENSATION_400', 'CARE_MEALS')
-   * @param flight Flight data context
-   * @param passenger Passenger data context
-   * @param incident Incident data context
-   * @returns Observable with goal satisfaction result
-   */
+  /** Backward chaining: POST /api/question (goal = backend query name) */
   askQuestion(goal: string, flight: Flight, passenger: Passenger, incident: Incident): Observable<QuestionResponse> {
-    const url = `${this.apiConfig.baseUrl}/question`;
-    const payload = {
-      goal,
-      flight,
-      passenger,
-      incident
-    };
-    console.debug('[ReasoningService] askQuestion payload', payload);
-    return this.http.post<QuestionResponse>(url, payload);
+    return this.http.post<QuestionResponse>(`${this.apiConfig.baseUrl}/question`, { goal, flight, passenger, incident });
+  }
+
+  /** CEP preset scenario: POST /api/simulation (scenario: ana | delay | cancellation) */
+  simulatePreset(scenario: string): Observable<CepResult> {
+    return this.http.post<CepResult>(`${this.apiConfig.baseUrl}/simulation`, { scenario });
+  }
+
+  /** CEP custom event stream: POST /api/simulation/custom */
+  simulateCustom(data: SimulationData): Observable<CepResult> {
+    return this.http.post<CepResult>(`${this.apiConfig.baseUrl}/simulation/custom`, data);
+  }
+
+  /** Rule template: POST /api/rules/threshold */
+  applyThreshold(minDelayHours: number, article: string, description: string, delayHours: number): Observable<Right[]> {
+    return this.http.post<Right[]>(`${this.apiConfig.baseUrl}/rules/threshold`, {
+      thresholds: [{ minDelayHours, article, description }],
+      incident: { delayHours }
+    });
   }
 }

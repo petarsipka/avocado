@@ -1,82 +1,141 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { FlightDisplay, Flight, FlightStatusEvent } from '../../models/flight.model';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Flight, FlightStatus } from '../../models/flight.model';
+import { CepResult } from '../../models/cep.model';
+import { ReasoningService } from '../../services/reasoning.service';
+import { ScenarioService, Scenario } from '../../services/scenario.service';
+
+interface EventRow {
+  flightId: string;
+  status: FlightStatus;
+  minutesAfterStart: number;
+  delayMinutes: number;
+}
+
+interface Preset {
+  id: string;
+  name: string;
+  specRef: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-flight-tracker',
   templateUrl: './flight-tracker.component.html',
   styleUrls: ['./flight-tracker.component.css']
 })
-export class FlightTrackerComponent {
-  flightForm: FormGroup;
-  flights: FlightDisplay[] = [
+export class FlightTrackerComponent implements OnInit {
+
+  presets: Preset[] = [
     {
-      flightId: '1', flightNumber: 'LH1411', airline: 'Lufthansa', airlineCode: 'LH',
-      operatingCarrier: 'LH',
-      departureAirport: 'BEG', departureCity: 'Belgrade',
-      arrivalAirport: 'FRA', arrivalCity: 'Frankfurt',
-      scheduledDeparture: '2026-07-03T10:00:00', scheduledArrival: '2026-07-03T11:50:00',
-      flightDistanceKm: 1050, distanceCategory: 'MEDIUM', status: 'DELAYED', delayMinutes: 125,
-      isFromEu: false, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
-      isWithinEu: false, hasConfirmedReservation: true
+      id: 'delay', name: 'CEP 1: Delay escalation', specRef: 'Spec Table 5.1',
+      description: 'LH1411 (medium distance) delayed 190 min - crosses the 2h and 3h thresholds, care and compensation notifications fire.'
     },
     {
-      flightId: '2', flightNumber: 'LH1860', airline: 'Lufthansa', airlineCode: 'LH',
-      operatingCarrier: 'LH',
-      departureAirport: 'FRA', departureCity: 'Frankfurt',
-      arrivalAirport: 'MAD', arrivalCity: 'Madrid',
-      scheduledDeparture: '2026-07-03T13:30:00', scheduledArrival: '2026-07-03T16:00:00',
-      flightDistanceKm: 1420, distanceCategory: 'MEDIUM', status: 'DEPARTED',
-      isFromEu: true, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
-      isWithinEu: true, hasConfirmedReservation: true
+      id: 'cancellation', name: 'CEP 2: Cancellation detected', specRef: 'Spec Table 5.2',
+      description: 'IB3151 goes from ON_TIME to CANCELLED - the pattern triggers an Art. 5 assessment notification.'
+    },
+    {
+      id: 'ana', name: 'CEP 3: Missed connection (Ana)', specRef: 'Spec Table 5.3 / §5',
+      description: 'LH1411 lands after LH1860 departed (same reservation R1) - missed connection detected per Folkerts C-11/11.'
     }
   ];
-  selectedFlight?: Flight;
-  flightEvents: FlightStatusEvent[] = [];
 
-  constructor(private fb: FormBuilder) {
-    this.flightForm = this.fb.group({
-      flightNumber: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}\d{1,4}$/)]],
-      departureAirport: ['', [Validators.required, Validators.minLength(3)]],
-      arrivalAirport: ['', [Validators.required, Validators.minLength(3)]],
-      scheduledDeparture: ['', Validators.required],
-      airline: ['', Validators.required],
-      distanceKm: [0, [Validators.required, Validators.min(1)]]
+  statuses: FlightStatus[] = ['ON_TIME', 'DELAYED', 'CANCELLED', 'DEPARTED', 'LANDED'];
+  scenarios: Scenario[];
+  selectedFlightIds: string[] = [];
+  events: EventRow[] = [];
+
+  result?: CepResult;
+  activePresetName = '';
+  loading = false;
+  error = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private reasoningService: ReasoningService,
+    public scenarioService: ScenarioService
+  ) {
+    this.scenarios = this.scenarioService.scenarios;
+  }
+
+  ngOnInit() {
+    const preset = this.route.snapshot.queryParamMap.get('preset');
+    if (preset) {
+      this.runPreset(preset);
+    }
+  }
+
+  runPreset(id: string) {
+    const preset = this.presets.find(p => p.id === id);
+    this.activePresetName = preset ? preset.name : id;
+    this.loading = true;
+    this.error = '';
+    this.result = undefined;
+
+    this.reasoningService.simulatePreset(id).subscribe({
+      next: (result) => {
+        this.result = result;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Backend request failed. Is the backend running on port 8080?';
+        this.loading = false;
+        console.error('[FlightTracker] preset failed', err);
+      }
     });
   }
 
-  addFlight() {
-    if (this.flightForm.valid) {
-      const newFlight: FlightDisplay = {
-        ...this.flightForm.value,
-        flightId: Date.now().toString(),
-        operatingCarrier: this.flightForm.value.airline,
-        departureCity: this.flightForm.value.departureAirport,
-        arrivalCity: this.flightForm.value.arrivalAirport,
-        scheduledArrival: '',
-        flightDistanceKm: this.flightForm.value.distanceKm,
-        distanceCategory: 'MEDIUM',
-        status: 'SCHEDULED',
-        isFromEu: false, isToEu: true, isEuCarrier: true, isRegulationApplicable: true,
-        isWithinEu: false, hasConfirmedReservation: true
-      };
-      this.flights.push(newFlight);
-      this.flightForm.reset();
-    }
+  addEvent() {
+    const firstFlight = this.selectedFlightIds[0] || this.scenarios[0].flight.flightId;
+    this.events.push({ flightId: firstFlight, status: 'DELAYED', minutesAfterStart: 60, delayMinutes: 120 });
   }
 
-  selectFlight(flight: FlightDisplay) {
-    this.selectedFlight = flight;
-    this.flightEvents = this.getMockEvents(flight.flightId);
+  removeEvent(index: number) {
+    this.events.splice(index, 1);
   }
 
-  private getMockEvents(flightId: string): FlightStatusEvent[] {
-    if (flightId !== '1') return [];
-    return [
-      { id: 'e1', flightId: '1', flightNumber: 'LH1411', status: 'ON_TIME', timestamp: '2026-07-03T09:00:00', message: 'Flight scheduled on time', severity: 'INFO' },
-      { id: 'e2', flightId: '1', flightNumber: 'LH1411', status: 'DELAYED', timestamp: '2026-07-03T11:30:00', delayMinutes: 60, newEta: '2026-07-03T12:50:00', message: 'Delay due to late incoming aircraft', severity: 'WARNING' },
-      { id: 'e3', flightId: '1', flightNumber: 'LH1411', status: 'DELAYED', timestamp: '2026-07-03T12:15:00', delayMinutes: 125, newEta: '2026-07-03T13:55:00', message: 'Delay extended - awaiting crew', severity: 'CRITICAL' },
-      { id: 'e4', flightId: '1', flightNumber: 'LH1411', status: 'LANDED', timestamp: '2026-07-03T13:55:00', message: 'Landed in Frankfurt', severity: 'INFO' }
-    ];
+  runCustom() {
+    if (!this.selectedFlightIds.length || !this.events.length) return;
+
+    const flights: Flight[] = this.selectedFlightIds
+      .map(id => this.scenarios.find(s => s.flight.flightId === id))
+      .filter((s): s is Scenario => !!s)
+      .map(s => ({ ...s.flight, distanceCategory: this.categoryFor(s.flight.flightDistanceKm, s.flight.isWithinEu) }));
+
+    const reservationId = 'R-CUSTOM';
+    const data = {
+      flights: flights.map(f => ({ ...f, reservationId })),
+      events: this.events.map(e => ({
+        flightId: e.flightId,
+        status: e.status,
+        timestamp: e.minutesAfterStart * 60000,
+        delayMinutes: Number(e.delayMinutes),
+        reservationId
+      }))
+    };
+
+    this.activePresetName = 'Custom simulation';
+    this.loading = true;
+    this.error = '';
+    this.result = undefined;
+
+    this.reasoningService.simulateCustom(data).subscribe({
+      next: (result) => {
+        this.result = result;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Backend request failed. Is the backend running on port 8080?';
+        this.loading = false;
+        console.error('[FlightTracker] custom simulation failed', err);
+      }
+    });
+  }
+
+  private categoryFor(km: number, withinEu: boolean): 'SHORT' | 'MEDIUM' | 'LONG' {
+    if (km <= 1500) return 'SHORT';
+    if (withinEu || km <= 3500) return 'MEDIUM';
+    return 'LONG';
   }
 }

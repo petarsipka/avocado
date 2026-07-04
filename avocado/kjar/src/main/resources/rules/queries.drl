@@ -55,3 +55,61 @@ end
 query refuseVoucherClaimCash(String $fid)
     Right(type == RightType.COMPENSATION)
 end
+
+query regulationApplicable(String $fid)
+    Flight(flightId == $fid, isRegulationApplicable == true)
+end
+
+query distanceIsShort(String $fid)
+    Flight(flightId == $fid, distanceCategory == DistanceCategory.SHORT)
+end
+
+query distanceIsMedium(String $fid)
+    Flight(flightId == $fid, distanceCategory == DistanceCategory.MEDIUM)
+end
+
+query distanceIsLong(String $fid)
+    Flight(flightId == $fid, distanceCategory == DistanceCategory.LONG)
+end
+
+query qualifyingIncident3h(String $fid)
+    Incident(flightId == $fid,
+        ( (type == IncidentType.DELAY && delayAtDestinationHours >= 3)
+          || type == IncidentType.CANCELLATION
+          || type == IncidentType.DENIED_BOARDING ) )
+end
+
+query qualifyingIncident4h(String $fid)
+    Incident(flightId == $fid,
+        ( (type == IncidentType.DELAY && delayAtDestinationHours >= 4)
+          || type == IncidentType.CANCELLATION
+          || type == IncidentType.DENIED_BOARDING ) )
+end
+
+query notExtraordinary(String $fid)
+    Incident(flightId == $fid, isExtraordinary == false)
+end
+
+query overnightStayRequired(String $fid)
+    Incident(flightId == $fid, isRequiresOvernightStay == true)
+end
+
+query refundTrigger(String $fid)
+    Incident(flightId == $fid,
+        ( (type == IncidentType.DELAY && delayHours >= 5)
+          || type == IncidentType.CANCELLATION
+          || type == IncidentType.DENIED_BOARDING ) )
+end
+
+query passengerChoseRefund(String $fid)
+    Passenger(flightId == $fid, choice == PassengerChoice.REFUND)
+end
+
+query passengerDowngraded(String $fid)
+    Incident(flightId == $fid, isDowngraded == true)
+end
+
+query compensationRightExists(String $fid)
+    Flight(flightId == $fid)
+    Right(type == RightType.COMPENSATION)
+end

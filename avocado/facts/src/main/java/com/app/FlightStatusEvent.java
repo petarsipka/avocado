@@ -9,7 +9,6 @@ public class FlightStatusEvent implements Serializable {
     private long timestamp;
     private int delayMinutes;
     private String reservationId;
-    private long scheduledDepartureTs;
 
     public FlightStatusEvent() {}
 
@@ -35,7 +34,4 @@ public class FlightStatusEvent implements Serializable {
 
     public String getReservationId() { return reservationId; }
     public void setReservationId(String reservationId) { this.reservationId = reservationId; }
-
-    public long getScheduledDepartureTs() { return scheduledDepartureTs; }
-    public void setScheduledDepartureTs(long scheduledDepartureTs) { this.scheduledDepartureTs = scheduledDepartureTs; }
 }

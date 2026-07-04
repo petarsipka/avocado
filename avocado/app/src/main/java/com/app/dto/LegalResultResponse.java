@@ -9,9 +9,17 @@ import java.util.List;
 
 public class LegalResultResponse {
 
+    private boolean regulationApplicable;
+    private String distanceCategory;
     private List<Compensation> compensations = new ArrayList<>();
     private List<Right> rights = new ArrayList<>();
     private List<Advice> advice = new ArrayList<>();
+
+    public boolean getRegulationApplicable() { return regulationApplicable; }
+    public void setRegulationApplicable(boolean regulationApplicable) { this.regulationApplicable = regulationApplicable; }
+
+    public String getDistanceCategory() { return distanceCategory; }
+    public void setDistanceCategory(String distanceCategory) { this.distanceCategory = distanceCategory; }
 
     public List<Compensation> getCompensations() { return compensations; }
     public void setCompensations(List<Compensation> compensations) { this.compensations = compensations; }

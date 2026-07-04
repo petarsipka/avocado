@@ -30,9 +30,16 @@ public class SimulationController {
         SimulationData data;
         if ("ana".equalsIgnoreCase(request.getScenario())) {
             data = flightSimulation.anaScenario();
+        } else if ("cancellation".equalsIgnoreCase(request.getScenario())) {
+            data = flightSimulation.cancellationScenario();
         } else {
-            data = flightSimulation.delayScenario("JU380", DistanceCategory.SHORT, 130);
+            data = flightSimulation.delayScenario("LH1411", DistanceCategory.MEDIUM, 190);
         }
+        return cepService.simulate(data);
+    }
+
+    @PostMapping("/simulation/custom")
+    public CepResult simulateCustom(@RequestBody SimulationData data) {
         return cepService.simulate(data);
     }
 }

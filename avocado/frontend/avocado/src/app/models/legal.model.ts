@@ -1,88 +1,46 @@
-export interface RuleTrace {
-  ruleId: string;
-  ruleName: string;
-  level: 1 | 2 | 3 | 4;
-  condition: string;
-  action: string;
-  articleReference: string;
-  fired: boolean;
-  timestamp: string;
-}
-
-/** Backend Compensation from Drools rules */
+/** Backend Compensation output fact */
 export interface Compensation {
-  article: string;      // from backend
-  amountEur: number;    // from backend (replaces amount)
-  explanation: string;  // from backend (replaces reason)
+  article: string;
+  amountEur: number;
+  explanation: string;
 }
 
-/** Backend Right with RightType enum from Drools rules */
-export type RightType = 'CARE_MEALS' | 'CARE_PHONE' | 'HOTEL' | 'HOTEL_TRANSPORT' | 'REFUND' | 'REROUTING' | 'ALTERNATIVE_FLIGHT' | 'COMPENSATION' | 'CARE_PRIORITY';
+/** Matches backend RightType enum */
+export type RightType =
+  | 'CARE_MEALS' | 'CARE_PHONE' | 'HOTEL' | 'HOTEL_TRANSPORT'
+  | 'REFUND' | 'REROUTING' | 'ALTERNATIVE_FLIGHT' | 'COMPENSATION' | 'CARE_PRIORITY';
 
+/** Backend Right output fact */
 export interface Right {
-  type: RightType;      // from backend
-  article: string;      // from backend
-  description: string;  // from backend
-}
-
-/** Extended Right for UI display */
-export interface CareRight extends Right {
-  activatedAtDelayMinutes?: number; // for display only
-}
-
-export interface RerouteRight extends Right {
-  deadline?: string; // for display only
-}
-
-/** Backend Advice from Drools rules */
-export interface Advice {
-  title: string;
+  type: RightType;
+  article: string;
   description: string;
-  category: string;
-  articleReference?: string;
-  priority?: number;
-  actionRequired?: boolean;
-  deadline?: string;
 }
 
-/** Backend response from /api/incident */
+/** Backend Advice output fact */
+export interface Advice {
+  text: string;
+  article: string;
+}
+
+/** Response from POST /api/incident */
 export interface LegalResultResponse {
+  regulationApplicable: boolean;
+  distanceCategory: string | null;
   compensations: Compensation[];
   rights: Right[];
   advice: Advice[];
 }
 
-/** Extended downgrade info for UI display */
-export interface DowngradeRefund {
-  applicable: boolean;
-  percentage: number;
-  amount: number;
-  article: string;
+/** Single backward-chaining condition check */
+export interface ConditionResult {
+  label: string;
+  satisfied: boolean;
 }
 
-export interface StrategicAdvice {
-  priority: number;
-  category: 'IMMEDIATE' | 'PROCEDURAL' | 'EVIDENCE' | 'LONG_TERM';
-  title: string;
-  description: string;
-  articleReference: string;
-  actionRequired: boolean;
-  deadline?: string;
-}
-
-export interface LegalQualification {
-  id: string;
-  incidentId: string;
-  regulationApplicable: boolean;
-  applicableArticles: string[];
-  incidentType: string;
-  distanceCategory: string;
-  compensation: Compensation;
-  careRights: CareRight[];
-  rerouteRights: RerouteRight[];
-  downgradeRefund?: DowngradeRefund;
-  extraordinaryCircumstance: boolean;
-  strategicAdvice: StrategicAdvice[];
-  ruleTrace: RuleTrace[];
-  overallConfidence: number;
+/** Response from POST /api/question */
+export interface QuestionResponse {
+  goal: string;
+  satisfied: boolean;
+  conditions: ConditionResult[];
 }

@@ -38,6 +38,18 @@ public class FlightSimulation {
         return new SimulationData(flights, events);
     }
 
+    public SimulationData cancellationScenario() {
+        Flight flight = new Flight("IB3151", true);
+        flight.setReservationId("R-IB3151");
+        flight.setDistanceCategory(DistanceCategory.SHORT);
+
+        List<FlightStatusEvent> events = new ArrayList<>();
+        events.add(new FlightStatusEvent("IB3151", FlightStatus.ON_TIME, 0, 0, "R-IB3151"));
+        events.add(new FlightStatusEvent("IB3151", FlightStatus.CANCELLED, 30 * MINUTE, 0, "R-IB3151"));
+
+        return new SimulationData(Collections.singletonList(flight), events);
+    }
+
     public SimulationData delayScenario(String flightId, DistanceCategory category, int delayMinutes) {
         Flight flight = new Flight(flightId, true);
         flight.setReservationId("R-" + flightId);

@@ -1,12 +1,84 @@
 <div class="query-container">
   <h1>Legal Query Engine</h1>
-  <p class="subtitle">Backward Chaining - Verify Specific Legal Goals</p>
-  
+  <p class="subtitle">Backward chaining — the system starts from a goal and verifies its conditions against the facts</p>
+
+  <mat-card class="scenario-picker">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Facts context (flight / scenario)</mat-label>
+      <mat-select [value]="selectedScenarioId" (selectionChange)="loadScenarioFacts($event.value)">
+        <mat-option *ngFor="let s of scenarios" [value]="s.id">{{ s.name }} — {{ s.specRef }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <p class="scenario-facts">
+      <strong>{{ scenario.flight.flightId }}</strong>
+      {{ scenario.flight.departureAirport }} → {{ scenario.flight.arrivalAirport }},
+      {{ scenario.flight.operatingCarrier }}
+    </p>
+
+    <form [formGroup]="factsForm" class="facts-form">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Distance (km)</mat-label>
+          <input matInput type="number" formControlName="flightDistanceKm">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Incident type</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="DELAY">Delay</mat-option>
+            <mat-option value="CANCELLATION">Cancellation</mat-option>
+            <mat-option value="DENIED_BOARDING">Denied boarding</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Cause</mat-label>
+          <mat-select formControlName="cause">
+            <mat-option value="NONE">None / airline's fault</mat-option>
+            <mat-option value="TECHNICAL_FAULT">Technical fault</mat-option>
+            <mat-option value="WEATHER">Severe weather</mat-option>
+            <mat-option value="POLITICAL_INSTABILITY">Political instability</mat-option>
+            <mat-option value="SECURITY_RISK">Security risk</mat-option>
+            <mat-option value="ATC_STRIKE">ATC strike</mat-option>
+            <mat-option value="AIRPORT_STRIKE">Airport strike</mat-option>
+            <mat-option value="ATM_DECISION">ATM decision</mat-option>
+            <mat-option value="AIRLINE_STAFF_STRIKE">Airline staff strike</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Delay (h)</mat-label>
+          <input matInput type="number" formControlName="delayHours">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Delay at destination (h)</mat-label>
+          <input matInput type="number" formControlName="delayAtDestinationHours">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Informed days before</mat-label>
+          <input matInput type="number" formControlName="noticeDaysBefore">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Passenger choice</mat-label>
+          <mat-select formControlName="choice">
+            <mat-option value="NONE">Not decided</mat-option>
+            <mat-option value="REFUND">Refund</mat-option>
+            <mat-option value="REROUTING">Rerouting</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="checkbox-row">
+        <mat-checkbox formControlName="isWithinEu">Whole flight within EU</mat-checkbox>
+        <mat-checkbox formControlName="isRequiresOvernightStay">Overnight stay required</mat-checkbox>
+        <mat-checkbox formControlName="isDowngraded">Downgraded</mat-checkbox>
+      </div>
+    </form>
+  </mat-card>
+
   <div class="query-layout">
     <mat-card class="goals-card">
       <mat-card-header>
-        <mat-card-title>Select Legal Goal</mat-card-title>
-        <mat-card-subtitle>What right do you want to verify?</mat-card-subtitle>
+        <mat-card-title>Select legal goal</mat-card-title>
+        <mat-card-subtitle>Each goal is a Drools query in the knowledge base</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <mat-list>
@@ -18,80 +90,47 @@
         </mat-list>
       </mat-card-content>
     </mat-card>
-    
-    <div class="query-main">
-      <mat-card *ngIf="selectedGoal" class="facts-card">
-        <mat-card-header>
-          <mat-card-title>Enter Known Facts</mat-card-title>
-          <mat-card-subtitle>For goal: {{ selectedGoal.name }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="factsForm" class="facts-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Delay at Destination (min)</mat-label>
-              <input matInput type="number" formControlName="delayMinutes">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Distance (km)</mat-label>
-              <input matInput type="number" formControlName="distanceKm">
-            </mat-form-field>
-            <div class="checkbox-row">
-              <mat-checkbox formControlName="isEUDeparture">EU Departure</mat-checkbox>
-              <mat-checkbox formControlName="isEUCarrier">EU Carrier</mat-checkbox>
-              <mat-checkbox formControlName="extraordinaryCircumstances">Extraordinary Circumstances</mat-checkbox>
-            </div>
-          </form>
-        </mat-card-content>
-        <mat-card-actions>
+
+    <mat-card class="result-card">
+      <mat-card-header>
+        <mat-card-title>Verification</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p *ngIf="!selectedGoal" class="muted">Select a goal on the left, then run the verification.</p>
+
+        <ng-container *ngIf="selectedGoal">
+          <p>
+            Goal: <strong>{{ selectedGoal.name }}</strong><br>
+            <span class="muted">Backend query: <code>{{ selectedGoal.id }}</code></span>
+          </p>
           <button mat-raised-button color="primary" (click)="verifyGoal()" [disabled]="loading">
-            <mat-icon>psychology</mat-icon> Run Backward Chaining
+            <mat-icon>psychology</mat-icon> {{ loading ? 'Verifying...' : 'Verify Goal' }}
           </button>
-        </mat-card-actions>
-      </mat-card>
-      
-      <mat-card *ngIf="result" class="result-card" [class.achievable]="result.achievable">
-        <mat-card-header>
-          <mat-icon mat-card-avatar>{{ result.achievable ? 'check_circle' : 'cancel' }}</mat-icon>
-          <mat-card-title>{{ result.goalName }}</mat-card-title>
-          <mat-card-subtitle>{{ result.articleReference }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="conclusion">
-            <h3>Conclusion</h3>
-            <p>{{ result.conclusion }}</p>
-          </div>
-          
-          <h4>Proof Tree (Backward Trace)</h4>
-          <div class="proof-tree">
-            <div class="goal-node"><strong>GOAL: {{ result.goalName }}</strong></div>
-            <div class="conditions-list">
-              <div *ngFor="let cond of result.conditions" class="condition-item" [class.satisfied]="cond.satisfied">
-                <mat-icon>{{ cond.satisfied ? 'check' : 'close' }}</mat-icon>
-                <div>
-                  <strong>{{ cond.description }}</strong>
-                  <small>{{ cond.articleReference }}</small>
-                  <p *ngIf="cond.evidence">Evidence: {{ cond.evidence }}</p>
-                </div>
-              </div>
+
+          <p class="error" *ngIf="error">{{ error }}</p>
+
+          <div *ngIf="result" class="verdict" [class.satisfied]="result.satisfied" [class.not-satisfied]="!result.satisfied">
+            <mat-icon>{{ result.satisfied ? 'check_circle' : 'cancel' }}</mat-icon>
+            <div>
+              <strong>{{ result.satisfied ? 'GOAL SATISFIED' : 'GOAL NOT SATISFIED' }}</strong>
+              <p>
+                {{ result.satisfied
+                  ? 'All conditions of the query are met by the current facts.'
+                  : 'At least one condition of the query is not met by the current facts.' }}
+              </p>
             </div>
           </div>
-          
-          <div *ngIf="result.missingFacts.length > 0" class="missing-facts">
-            <h4>Missing Facts</h4>
-            <ul><li *ngFor="let fact of result.missingFacts">{{ fact }}</li></ul>
+
+          <div *ngIf="result && result.conditions.length" class="conditions">
+            <h4>Conditions checked (backward, per spec Table 6.1)</h4>
+            <div class="condition-item" *ngFor="let c of result.conditions"
+                 [class.condition-ok]="c.satisfied" [class.condition-fail]="!c.satisfied">
+              <mat-icon>{{ c.satisfied ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span>{{ c.label }}</span>
+            </div>
           </div>
-          
-          <div class="next-steps">
-            <h4>Next Steps</h4>
-            <p>{{ result.nextSteps }}</p>
-          </div>
-          
-          <div class="rule-trace">
-            <h4>Rule Trace</h4>
-            <code *ngFor="let trace of result.ruleTrace">{{ trace }}</code>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+        </ng-container>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

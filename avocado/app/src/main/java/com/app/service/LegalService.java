@@ -39,6 +39,8 @@ public class LegalService {
         session.fireAllRules();
 
         LegalResultResponse result = new LegalResultResponse();
+        result.setRegulationApplicable(flight.getIsRegulationApplicable());
+        result.setDistanceCategory(flight.getDistanceCategory() != null ? flight.getDistanceCategory().name() : null);
         for (Object o : session.getObjects()) {
             if (o instanceof Compensation) {
                 result.getCompensations().add((Compensation) o);

@@ -22,8 +22,7 @@ public class QuestionController {
 
     @PostMapping("/question")
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
-        boolean satisfied = queryService.ask(request.getFlight(), request.getPassenger(),
+        return queryService.ask(request.getFlight(), request.getPassenger(),
                 request.getIncident(), request.getGoal());
-        return new QuestionResponse(request.getGoal(), satisfied);
     }
 }
